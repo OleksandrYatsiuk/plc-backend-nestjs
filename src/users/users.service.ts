@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
+import { PaginatedDto } from 'src/models/pagination.interface';
 import { User, UserDocument } from 'src/schemas/user.schema';
 import { CheckCodeDto } from './dto/check-code.dto';
 import { CreateUserDto, EUserRole } from './dto/create-user.dto';
@@ -35,8 +36,14 @@ export class UsersService {
   }
 
 
-  findAll(): Promise<UserDocument[]> {
-    return this.db.find().exec();
+  async findAll(page: number, limit: number): Promise<PaginatedDto<User>> {
+    page = page - 1;
+    const count = await this.db.countDocuments();
+    const users = await this.db.find().sort({ updatedAt: 1 }).limit(limit).skip(limit * page);
+    return {
+      total: count, limit, page: page + 1,
+      result: users
+    };
   }
 
   findOne(id: string): Promise<UserDocument> {
@@ -83,4 +90,26 @@ export class UsersService {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+
+  private parseModel(user: UserDocument): User {
+    return {
+      id: user._id,
+      updatedAt: 1610276245305,
+      createdAt: 1610276245305,
+      accessToken: null,
+      passwordHash: '$2b$10$NJjfqVNNGLKdWDCVaem.4.lLKwyYOF1.SbaaoG2crLwWKcX/0qD12',
+      haveMessages: false,
+      courses: [],
+      role: 'admin',
+      code: null,
+      status: 0,
+      chat_id: null,
+      phone: null,
+      email: null,
+      lastName: null,
+      firstName: null,
+      username: 'techadmin3',
+    }
+  }
+
 }

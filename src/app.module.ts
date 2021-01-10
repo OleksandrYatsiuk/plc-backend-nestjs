@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { MongooseConfigService } from './mongoose-config.service';
+import { CoursesModule } from './courses/courses.module';
 
 @Module({
   imports: [
@@ -12,7 +13,8 @@ import { MongooseConfigService } from './mongoose-config.service';
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       useClass: MongooseConfigService
-    })
+    }),
+    CoursesModule
   ],
   controllers: [AppController],
   providers: [AppService, MongooseConfigService],

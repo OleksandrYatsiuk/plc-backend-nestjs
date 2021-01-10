@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Res, HttpStatus, UsePipes, NotFoundException, Next } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Res, HttpStatus, UsePipes, NotFoundException, Next, Query, HttpException, InternalServerErrorException } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags, ApiTooManyRequestsResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse,
+  ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiQuery, ApiTags
+} from '@nestjs/swagger';
 import { UserDocument } from 'src/schemas/user.schema';
 import { UserDto } from './dto/user.dto';
 import { PaginatedDto } from 'src/models/pagination.interface';
@@ -11,7 +14,7 @@ import { ApiPaginatedResponse } from 'src/decorators/paginator';
 import { RegisterDto } from './dto/register.dto';
 import { CheckCodeDto } from './dto/check-code.dto';
 
-@ApiTags('users')
+@ApiTags('Users')
 @Controller('users')
 @ApiExtraModels(PaginatedDto)
 export class UsersController {
@@ -28,8 +31,14 @@ export class UsersController {
 
   @Get()
   @ApiPaginatedResponse(UserDto)
-  findAll(): Promise<UserDocument[]> {
-    return this.usersService.findAll();
+  @ApiQuery({ name: 'page', type: Number, required: false })
+  @ApiQuery({ name: 'limit', type: Number, required: false })
+  findAll(@Query() query, @Param() params, @Res() res: Response): void {
+    this.usersService.findAll(+query?.page || 1, +query?.limit || 10)
+      .then(result => res.status(HttpStatus.OK).send(result))
+      .catch(e => {
+        throw new InternalServerErrorException(e.message);
+      })
   }
 
   @Get(':id')

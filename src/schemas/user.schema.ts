@@ -7,6 +7,10 @@ export type UserDocument = User & mongoose.Document;
 @Schema({ versionKey: false })
 export class User {
 
+
+    @Prop()
+    readonly id: string;
+
     @Prop({ default: null })
     username: string;
 

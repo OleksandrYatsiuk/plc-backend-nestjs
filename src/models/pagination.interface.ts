@@ -8,7 +8,7 @@ export class PaginatedDto<TData> {
     limit: number;
   
     @ApiProperty()
-    offset: number;
+    page: number;
   
-    results: TData[];
+    result: TData[];
   }
