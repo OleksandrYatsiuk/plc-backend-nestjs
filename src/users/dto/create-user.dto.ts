@@ -1,16 +1,15 @@
-import { ApiProperty, ApiQuery } from '@nestjs/swagger';
-import { UserDto } from './user.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum EUserRole {
-    Admin = 'Admin',
-    Subscriber = 'Subscriber',
+    Admin = 'admin',
+    Subscriber = 'subscriber',
 }
 
 export class CreateUserDto {
    
     @ApiProperty({
         title: 'This is user phone number',
-        default: 380999999999,
+        default: "+380999999999",
         required: true,
         type: String
     })

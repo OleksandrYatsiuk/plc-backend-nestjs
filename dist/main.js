@@ -20,7 +20,7 @@ async function bootstrap() {
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, options);
     swagger_1.SwaggerModule.setup('api', app, document);
-    await app.listen(3000);
+    await app.listen(process.env.PORT || 3000);
     console.log(`\n Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
@@ -57,7 +57,7 @@ const mongoose_module_1 = __webpack_require__(6);
 const app_controller_1 = __webpack_require__(7);
 const app_service_1 = __webpack_require__(8);
 const users_module_1 = __webpack_require__(9);
-const mongoose_config_service_1 = __webpack_require__(22);
+const mongoose_config_service_1 = __webpack_require__(24);
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -174,7 +174,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UsersModule = void 0;
 const common_1 = __webpack_require__(4);
 const users_service_1 = __webpack_require__(10);
-const users_controller_1 = __webpack_require__(14);
+const users_controller_1 = __webpack_require__(16);
 const mongoose_1 = __webpack_require__(12);
 const user_schema_1 = __webpack_require__(13);
 let UsersModule = class UsersModule {
@@ -210,9 +210,11 @@ var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UsersService = void 0;
 const common_1 = __webpack_require__(4);
-const mongoose_1 = __webpack_require__(11);
-const mongoose_2 = __webpack_require__(12);
+const mongoose_1 = __webpack_require__(12);
+const bcrypt = __webpack_require__(15);
+const mongoose_2 = __webpack_require__(11);
 const user_schema_1 = __webpack_require__(13);
+const create_user_dto_1 = __webpack_require__(14);
 let UsersService = class UsersService {
     constructor(db) {
         this.db = db;
@@ -221,11 +223,33 @@ let UsersService = class UsersService {
         const user = new this.db(data);
         return user.save();
     }
+    registerAdmin(data) {
+        const passwordHash = bcrypt.hashSync(data.password, 10);
+        const user = new this.db(Object.assign(Object.assign({}, data), { role: create_user_dto_1.EUserRole.Admin, passwordHash }));
+        return user.save();
+    }
+    async loginAdmin(data) {
+        const user = await this.db.findOne({ username: data.username });
+        if (user && bcrypt.compareSync(data.password, user.passwordHash)) {
+            return this.db.findByIdAndUpdate(user._id, { $set: { accessToken: bcrypt.hashSync(data.password, 10) } }, { new: true });
+        }
+        else {
+            throw new common_1.BadRequestException();
+        }
+    }
     findAll() {
         return this.db.find().exec();
     }
     findOne(id) {
-        return this.db.findById(id).exec();
+        return this.db.findById(id).exec()
+            .then(user => {
+            if (user) {
+                return user;
+            }
+            else {
+                throw new common_1.NotFoundException('User was not found');
+            }
+        });
     }
     update(id, data) {
         return this.db.findByIdAndUpdate(id, { $set: { data } }, { new: true }).exec();
@@ -233,11 +257,35 @@ let UsersService = class UsersService {
     remove(id) {
         return this.db.findByIdAndDelete(id).exec();
     }
+    async genCode(data) {
+        const user = await this.db.findOne(data);
+        if (user) {
+            const code = this.getRandomInt(1000, 9999);
+            setTimeout(() => {
+                this.db.findByIdAndUpdate(user._id, { $set: { code: null, updatedAt: Date.now() } }).exec();
+            }, 30 * 60 * 1000);
+            return this.db.findByIdAndUpdate(user._id, { $set: { code, updatedAt: Date.now() } }, { new: true }).exec();
+        }
+    }
+    async checkCode(data) {
+        const user = await this.db.findOne(data);
+        if (user && user.code === data.code) {
+            return user;
+        }
+        else {
+            throw new common_1.BadRequestException('Код не валідний!');
+        }
+    }
+    getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
 };
 UsersService = __decorate([
     common_1.Injectable(),
-    __param(0, mongoose_2.InjectModel(user_schema_1.User.name)),
-    __metadata("design:paramtypes", [typeof (_a = typeof mongoose_1.Model !== "undefined" && mongoose_1.Model) === "function" ? _a : Object])
+    __param(0, mongoose_1.InjectModel(user_schema_1.User.name)),
+    __metadata("design:paramtypes", [typeof (_a = typeof mongoose_2.Model !== "undefined" && mongoose_2.Model) === "function" ? _a : Object])
 ], UsersService);
 exports.UsersService = UsersService;
 
@@ -277,6 +325,10 @@ let User = class User {
 __decorate([
     mongoose_1.Prop({ default: null }),
     __metadata("design:type", String)
+], User.prototype, "username", void 0);
+__decorate([
+    mongoose_1.Prop({ default: null }),
+    __metadata("design:type", String)
 ], User.prototype, "firstName", void 0);
 __decorate([
     mongoose_1.Prop({ default: null }),
@@ -287,7 +339,7 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
 __decorate([
-    mongoose_1.Prop({ required: true }),
+    mongoose_1.Prop({ default: null }),
     __metadata("design:type", String)
 ], User.prototype, "phone", void 0);
 __decorate([
@@ -331,7 +383,7 @@ __decorate([
     __metadata("design:type", Number)
 ], User.prototype, "updatedAt", void 0);
 User = __decorate([
-    mongoose_1.Schema()
+    mongoose_1.Schema({ versionKey: false })
 ], User);
 exports.User = User;
 exports.UserSchema = mongoose_1.SchemaFactory.createForClass(User);
@@ -351,21 +403,65 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CreateUserDto = exports.EUserRole = void 0;
+const swagger_1 = __webpack_require__(2);
+var EUserRole;
+(function (EUserRole) {
+    EUserRole["Admin"] = "admin";
+    EUserRole["Subscriber"] = "subscriber";
+})(EUserRole = exports.EUserRole || (exports.EUserRole = {}));
+class CreateUserDto {
+}
+__decorate([
+    swagger_1.ApiProperty({
+        title: 'This is user phone number',
+        default: "+380999999999",
+        required: true,
+        type: String
+    }),
+    __metadata("design:type", String)
+], CreateUserDto.prototype, "phone", void 0);
+exports.CreateUserDto = CreateUserDto;
+
+
+/***/ }),
+/* 15 */
+/***/ ((module) => {
+
+module.exports = require("bcrypt");;
+
+/***/ }),
+/* 16 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b, _c, _d, _e, _f, _g, _h;
+var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UsersController = void 0;
 const common_1 = __webpack_require__(4);
-const express_1 = __webpack_require__(15);
+const express_1 = __webpack_require__(17);
 const users_service_1 = __webpack_require__(10);
-const create_user_dto_1 = __webpack_require__(16);
-const update_user_dto_1 = __webpack_require__(17);
+const create_user_dto_1 = __webpack_require__(14);
+const update_user_dto_1 = __webpack_require__(18);
 const swagger_1 = __webpack_require__(2);
-const user_dto_1 = __webpack_require__(19);
-const pagination_interface_1 = __webpack_require__(20);
-const paginator_1 = __webpack_require__(21);
+const user_dto_1 = __webpack_require__(20);
+const pagination_interface_1 = __webpack_require__(21);
+const paginator_1 = __webpack_require__(22);
+const register_dto_1 = __webpack_require__(23);
+const check_code_dto_1 = __webpack_require__(25);
 let UsersController = class UsersController {
     constructor(usersService) {
         this.usersService = usersService;
@@ -378,8 +474,10 @@ let UsersController = class UsersController {
     findAll() {
         return this.usersService.findAll();
     }
-    findOne(id) {
-        return this.usersService.findOne(id);
+    findOne(id, res, next) {
+        this.usersService.findOne(id)
+            .then(user => res.status(common_1.HttpStatus.OK).send(user))
+            .catch(e => next(new common_1.NotFoundException(e.message)));
     }
     update(id, data) {
         return this.usersService.update(id, data);
@@ -387,6 +485,26 @@ let UsersController = class UsersController {
     remove(id, res) {
         this.usersService.remove(id)
             .then(() => res.status(common_1.HttpStatus.NO_CONTENT))
+            .catch(e => res.status(common_1.HttpStatus.INTERNAL_SERVER_ERROR).send({ message: e.message, stack: e }));
+    }
+    registerAdmin(user, res) {
+        this.usersService.registerAdmin(user)
+            .then((user) => res.status(common_1.HttpStatus.CREATED).send(user))
+            .catch(e => res.status(common_1.HttpStatus.INTERNAL_SERVER_ERROR).send({ message: e.message, stack: e }));
+    }
+    loginAdmin(user, res) {
+        this.usersService.loginAdmin(user)
+            .then(user => res.status(common_1.HttpStatus.OK).send(user))
+            .catch(e => res.status(common_1.HttpStatus.INTERNAL_SERVER_ERROR).send({ message: e.message, stack: e }));
+    }
+    generateCode(data, res) {
+        this.usersService.genCode(data)
+            .then(user => res.status(common_1.HttpStatus.OK).send(user))
+            .catch(e => res.status(common_1.HttpStatus.INTERNAL_SERVER_ERROR).send({ message: e.message, stack: e }));
+    }
+    checkCode(data, res) {
+        this.usersService.checkCode(data)
+            .then(user => res.status(common_1.HttpStatus.OK).send(user))
             .catch(e => res.status(common_1.HttpStatus.INTERNAL_SERVER_ERROR).send({ message: e.message, stack: e }));
     }
 };
@@ -408,18 +526,18 @@ __decorate([
 __decorate([
     common_1.Get(':id'),
     swagger_1.ApiOkResponse({ type: user_dto_1.UserDto }),
-    __param(0, common_1.Param('id')),
+    __param(0, common_1.Param('id')), __param(1, common_1.Res()), __param(2, common_1.Next()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", typeof (_d = typeof Promise !== "undefined" && Promise) === "function" ? _d : Object)
+    __metadata("design:paramtypes", [String, typeof (_d = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _d : Object, typeof (_e = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _e : Object]),
+    __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findOne", null);
 __decorate([
     common_1.Put(':id'),
     swagger_1.ApiOkResponse({ type: user_dto_1.UserDto }),
     __param(0, common_1.Param('id')), __param(1, common_1.Body()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_e = typeof update_user_dto_1.UpdateUserDto !== "undefined" && update_user_dto_1.UpdateUserDto) === "function" ? _e : Object]),
-    __metadata("design:returntype", typeof (_f = typeof Promise !== "undefined" && Promise) === "function" ? _f : Object)
+    __metadata("design:paramtypes", [String, typeof (_f = typeof update_user_dto_1.UpdateUserDto !== "undefined" && update_user_dto_1.UpdateUserDto) === "function" ? _f : Object]),
+    __metadata("design:returntype", typeof (_g = typeof Promise !== "undefined" && Promise) === "function" ? _g : Object)
 ], UsersController.prototype, "update", null);
 __decorate([
     common_1.Delete(':id'),
@@ -428,62 +546,59 @@ __decorate([
     swagger_1.ApiInternalServerErrorResponse(),
     __param(0, common_1.Param('id')), __param(1, common_1.Res()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_g = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _g : Object]),
+    __metadata("design:paramtypes", [String, typeof (_h = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _h : Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "remove", null);
+__decorate([
+    common_1.Post('register'),
+    swagger_1.ApiCreatedResponse({ type: user_dto_1.UserDto }),
+    swagger_1.ApiInternalServerErrorResponse(),
+    __param(0, common_1.Body()), __param(1, common_1.Res()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_j = typeof register_dto_1.RegisterDto !== "undefined" && register_dto_1.RegisterDto) === "function" ? _j : Object, typeof (_k = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _k : Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "registerAdmin", null);
+__decorate([
+    common_1.Post('login'),
+    swagger_1.ApiOkResponse({ type: user_dto_1.UserDto }),
+    __param(0, common_1.Body()), __param(1, common_1.Res()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_l = typeof register_dto_1.RegisterDto !== "undefined" && register_dto_1.RegisterDto) === "function" ? _l : Object, typeof (_m = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _m : Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "loginAdmin", null);
+__decorate([
+    common_1.Post('generate-code'),
+    swagger_1.ApiOkResponse({ type: user_dto_1.UserDto }),
+    __param(0, common_1.Body()), __param(1, common_1.Res()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_o = typeof create_user_dto_1.CreateUserDto !== "undefined" && create_user_dto_1.CreateUserDto) === "function" ? _o : Object, typeof (_p = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _p : Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "generateCode", null);
+__decorate([
+    common_1.Post('check-code'),
+    swagger_1.ApiOkResponse({ type: user_dto_1.UserDto }),
+    __param(0, common_1.Body()), __param(1, common_1.Res()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_q = typeof check_code_dto_1.CheckCodeDto !== "undefined" && check_code_dto_1.CheckCodeDto) === "function" ? _q : Object, typeof (_r = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _r : Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "checkCode", null);
 UsersController = __decorate([
     swagger_1.ApiTags('users'),
     common_1.Controller('users'),
     swagger_1.ApiExtraModels(pagination_interface_1.PaginatedDto),
-    __metadata("design:paramtypes", [typeof (_h = typeof users_service_1.UsersService !== "undefined" && users_service_1.UsersService) === "function" ? _h : Object])
+    __metadata("design:paramtypes", [typeof (_s = typeof users_service_1.UsersService !== "undefined" && users_service_1.UsersService) === "function" ? _s : Object])
 ], UsersController);
 exports.UsersController = UsersController;
 
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ ((module) => {
 
 module.exports = require("express");;
 
 /***/ }),
-/* 16 */
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateUserDto = exports.EUserRole = void 0;
-const swagger_1 = __webpack_require__(2);
-var EUserRole;
-(function (EUserRole) {
-    EUserRole["Admin"] = "Admin";
-    EUserRole["Subscriber"] = "Subscriber";
-})(EUserRole = exports.EUserRole || (exports.EUserRole = {}));
-class CreateUserDto {
-}
-__decorate([
-    swagger_1.ApiProperty({
-        title: 'This is user phone number',
-        default: 380999999999,
-        required: true,
-        type: String
-    }),
-    __metadata("design:type", String)
-], CreateUserDto.prototype, "phone", void 0);
-exports.CreateUserDto = CreateUserDto;
-
-
-/***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -498,9 +613,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UpdateUserDto = void 0;
-const mapped_types_1 = __webpack_require__(18);
+const mapped_types_1 = __webpack_require__(19);
 const swagger_1 = __webpack_require__(2);
-const create_user_dto_1 = __webpack_require__(16);
+const create_user_dto_1 = __webpack_require__(14);
 class UpdateUserDto extends mapped_types_1.PartialType(create_user_dto_1.CreateUserDto) {
 }
 __decorate([
@@ -617,13 +732,13 @@ exports.UpdateUserDto = UpdateUserDto;
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ ((module) => {
 
 module.exports = require("@nestjs/mapped-types");;
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -646,6 +761,15 @@ var EUserRole;
 })(EUserRole = exports.EUserRole || (exports.EUserRole = {}));
 class UserDto {
 }
+__decorate([
+    swagger_1.ApiProperty({
+        required: false,
+        readOnly: true,
+        type: String,
+        default: '5ff9f3e01789d3484c7dee4e'
+    }),
+    __metadata("design:type", String)
+], UserDto.prototype, "_id", void 0);
 __decorate([
     swagger_1.ApiProperty({
         title: 'This is user name',
@@ -782,7 +906,7 @@ exports.UserDto = UserDto;
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -816,7 +940,7 @@ exports.PaginatedDto = PaginatedDto;
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -824,7 +948,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ApiPaginatedResponse = void 0;
 const common_1 = __webpack_require__(4);
 const swagger_1 = __webpack_require__(2);
-const pagination_interface_1 = __webpack_require__(20);
+const pagination_interface_1 = __webpack_require__(21);
 const ApiPaginatedResponse = (model) => {
     return common_1.applyDecorators(swagger_1.ApiOkResponse({
         schema: {
@@ -846,7 +970,45 @@ exports.ApiPaginatedResponse = ApiPaginatedResponse;
 
 
 /***/ }),
-/* 22 */
+/* 23 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RegisterDto = void 0;
+const swagger_1 = __webpack_require__(2);
+class RegisterDto {
+}
+__decorate([
+    swagger_1.ApiProperty({
+        default: 'techadmin',
+        required: true,
+        type: String
+    }),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "username", void 0);
+__decorate([
+    swagger_1.ApiProperty({
+        default: 'Test123!',
+        required: true,
+        type: String
+    }),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "password", void 0);
+exports.RegisterDto = RegisterDto;
+
+
+/***/ }),
+/* 24 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -871,6 +1033,45 @@ MongooseConfigService = __decorate([
     common_1.Injectable()
 ], MongooseConfigService);
 exports.MongooseConfigService = MongooseConfigService;
+
+
+/***/ }),
+/* 25 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CheckCodeDto = void 0;
+const swagger_1 = __webpack_require__(2);
+const create_user_dto_1 = __webpack_require__(14);
+class CheckCodeDto extends create_user_dto_1.CreateUserDto {
+}
+__decorate([
+    swagger_1.ApiProperty({
+        default: "+380999999999",
+        required: true,
+        type: String
+    }),
+    __metadata("design:type", String)
+], CheckCodeDto.prototype, "phone", void 0);
+__decorate([
+    swagger_1.ApiProperty({
+        default: 1234,
+        required: true,
+        type: Number
+    }),
+    __metadata("design:type", Number)
+], CheckCodeDto.prototype, "code", void 0);
+exports.CheckCodeDto = CheckCodeDto;
 
 
 /***/ })

@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Res, HttpStatus } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Get, Post, Body, Put, Param, Delete, Res, HttpStatus, UsePipes, NotFoundException, Next } from '@nestjs/common';
+import { NextFunction, Response } from 'express';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -8,6 +8,8 @@ import { UserDocument } from 'src/schemas/user.schema';
 import { UserDto } from './dto/user.dto';
 import { PaginatedDto } from 'src/models/pagination.interface';
 import { ApiPaginatedResponse } from 'src/decorators/paginator';
+import { RegisterDto } from './dto/register.dto';
+import { CheckCodeDto } from './dto/check-code.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -32,8 +34,10 @@ export class UsersController {
 
   @Get(':id')
   @ApiOkResponse({ type: UserDto })
-  findOne(@Param('id') id: string): Promise<UserDocument> {
-    return this.usersService.findOne(id);
+  findOne(@Param('id') id: string, @Res() res: Response, @Next() next: NextFunction): void {
+    this.usersService.findOne(id)
+      .then(user => res.status(HttpStatus.OK).send(user))
+      .catch(e => next(new NotFoundException(e.message)));
   }
 
   @Put(':id')
@@ -51,4 +55,37 @@ export class UsersController {
       .then(() => res.status(HttpStatus.NO_CONTENT))
       .catch(e => res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ message: e.message, stack: e }))
   }
+
+  @Post('register')
+  @ApiCreatedResponse({ type: UserDto })
+  @ApiInternalServerErrorResponse()
+  registerAdmin(@Body() user: RegisterDto, @Res() res: Response): void {
+    this.usersService.registerAdmin(user)
+      .then((user) => res.status(HttpStatus.CREATED).send(user))
+      .catch(e => res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ message: e.message, stack: e }))
+  }
+
+  @Post('login')
+  @ApiOkResponse({ type: UserDto })
+  loginAdmin(@Body() user: RegisterDto, @Res() res: Response): void {
+    this.usersService.loginAdmin(user)
+      .then(user => res.status(HttpStatus.OK).send(user))
+      .catch(e => res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ message: e.message, stack: e }))
+  }
+
+  @Post('generate-code')
+  @ApiOkResponse({ type: UserDto })
+  generateCode(@Body() data: CreateUserDto, @Res() res: Response): void {
+    this.usersService.genCode(data)
+      .then(user => res.status(HttpStatus.OK).send(user))
+      .catch(e => res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ message: e.message, stack: e }))
+  }
+  @Post('check-code')
+  @ApiOkResponse({ type: UserDto })
+  checkCode(@Body() data: CheckCodeDto, @Res() res: Response): void {
+    this.usersService.checkCode(data)
+      .then(user => res.status(HttpStatus.OK).send(user))
+      .catch(e => res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ message: e.message, stack: e }))
+  }
+
 }

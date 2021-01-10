@@ -6,6 +6,15 @@ export enum EUserRole {
 }
 
 export class UserDto {
+
+    @ApiProperty({
+        required: false,
+        readOnly: true,
+        type: String,
+        default: '5ff9f3e01789d3484c7dee4e'
+    })
+    readonly _id: string;
+
     @ApiProperty({
         title: 'This is user name',
         required: false,

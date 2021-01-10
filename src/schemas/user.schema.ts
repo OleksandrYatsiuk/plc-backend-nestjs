@@ -4,8 +4,12 @@ import * as mongoose from 'mongoose';
 
 export type UserDocument = User & mongoose.Document;
 
-@Schema()
+@Schema({ versionKey: false })
 export class User {
+
+    @Prop({ default: null })
+    username: string;
+
     @Prop({ default: null })
     firstName: string;
 
@@ -15,7 +19,7 @@ export class User {
     @Prop({ default: null })
     email: string;
 
-    @Prop({ required: true })
+    @Prop({ default: null })
     phone: string;
 
     @Prop({ default: null })
