@@ -80,6 +80,9 @@
       "<rootDir>/src/",
       "<rootDir>/libs/"
     ],
-    "moduleNameMapper": {}
+    "moduleNameMapper": {},
+    "engines": {
+      "node": "14.x"
+    }
   }
 }
