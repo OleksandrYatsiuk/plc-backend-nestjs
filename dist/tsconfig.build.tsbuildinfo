@@ -1747,7 +1747,7 @@
         "affectsGlobalScope": false
       },
       "../src/models/pagination.interface.ts": {
-        "version": "0bcbeccfe8f536b90ec28e2598290e7ae965ca5dc32e743803d07778479d2846",
+        "version": "aeea4c9c3aa9c34f76b9abaf194d83f2731d80a2420c401fe936980bdb3f4532",
         "signature": "5777db738afef0c2d5f94af737aa671d18e0063d1c567d60e9a9ed2b125e0303",
         "affectsGlobalScope": false
       },
@@ -1882,7 +1882,7 @@
         "affectsGlobalScope": false
       },
       "../src/mongoose-config.service.ts": {
-        "version": "c1b5cfed5ad4b500ba3e3da8ba88d8ae8d9e026aa5e429107f556e979ddf0c29",
+        "version": "e49e1f873cefb0a551beae4ea499a049e26b6ce84695c8e89a2ef0bdab874883",
         "signature": "6d5f7be8d5919d129f33c105015404e390429dedbf34590cc34142fe0714adfd",
         "affectsGlobalScope": false
       },
@@ -1897,7 +1897,7 @@
         "affectsGlobalScope": false
       },
       "../src/courses/dto/create-course.dto.ts": {
-        "version": "1e777b7e75b7eb62a4c45a7ef4c4fccd1b3b0d1abe0723532dedf23f89a5a166",
+        "version": "18a5a9179ff0507679f98819cec9f1e4ae1df964d1b7999e3ffbf9bbae11506a",
         "signature": "2603700c86e83e4b6d4f099cf1c3c2aee299f26b7ad5aca65d5dd3a8a01447cc",
         "affectsGlobalScope": false
       },
@@ -1916,18 +1916,13 @@
         "signature": "73025bdc3fe9679b576d90a87ddf6318c92dad967d846d7d3d89461bb2679d28",
         "affectsGlobalScope": false
       },
-      "../src/filters/all-exceptions.ts": {
-        "version": "adae7dc38485735b380c5853abee15acbfa34f250f48614d3273713eebd8732c",
-        "signature": "6984ae9180829afe1f722aa9dc1ace67129494cad84c2c0c8df8719ba1769a2c",
-        "affectsGlobalScope": false
-      },
       "../src/pipes/joi-validation.pipe.ts": {
         "version": "4a450d5e8d269141349b2721c9a3d41ff7c41ac735b23ec10162ad9beeb39ff6",
         "signature": "2615cf6028b0268fd6496a9626987aa920f56720a11eac897fe4f4aa6e0da95e",
         "affectsGlobalScope": false
       },
       "../src/courses/courses.controller.ts": {
-        "version": "bb2ed8aceaeed790f0ee4f4f20f27c38c560d5fbc491bdf447ead5d1dd26ebed",
+        "version": "ff48ea2c6105d4ccfad9a49fcb8210d33ae1f10c2e590bd25342e4d382da7023",
         "signature": "ee8749dd3cf66b3bac301d62590e7aab1e923483f1154a824af2939b9a7eb23c",
         "affectsGlobalScope": false
       },
@@ -1936,8 +1931,33 @@
         "signature": "38a0f816a78633c667d3e014d78926b6fa5d4a00897bc12fc00c5eb4389956b7",
         "affectsGlobalScope": false
       },
+      "../src/schemas/lesson.schema.ts": {
+        "version": "438b7b49476905c01c0b32f818e15efc5e24e7313cacaa6ffeb178c19d415333",
+        "signature": "66fc468b06211b89415b47ebba304e55ca8ab926251cde562e00b82af5194677",
+        "affectsGlobalScope": false
+      },
+      "../src/lessons/dto/create-lesson.ts": {
+        "version": "232487cf0876d9fe3c9e5dfbcc45188bea27c5b3c0d34d0b4f7e68a57b0d74e1",
+        "signature": "aa7e9b1d19bb16604082cda4f0c02f8b64b326b122053942d925194dd71e8f55",
+        "affectsGlobalScope": false
+      },
+      "../src/lessons/lessons.service.ts": {
+        "version": "d23eef9102b5ed16dae1f91fbff5a56a98f5ee076bbc90da497a62eddc05b818",
+        "signature": "742d6300a7c058fa3f18ed7906c079be43f877838dd960412e4ee1bc535c30af",
+        "affectsGlobalScope": false
+      },
+      "../src/lessons/lessons.controller.ts": {
+        "version": "22f0674927eee11f0fd7f8ea2a8bb9447ef2b756adecbca5ab631cef7174b649",
+        "signature": "ebfc02c8db05d937a0c0920c579143e9f76306b31db4508995d55338ccb6a6f0",
+        "affectsGlobalScope": false
+      },
+      "../src/lessons/lessons.module.ts": {
+        "version": "ab50689c0a1999f910fa0ce4c36beb5468a92abb14453ef0391e4252e104359f",
+        "signature": "7a6e1dc3a397db32e147f1dfb1ad4036c2bd1b100a2e244d1c8c9cf6df692c17",
+        "affectsGlobalScope": false
+      },
       "../src/app.module.ts": {
-        "version": "57fdda7344ffe9dac8ede38a979adb1043722e5896df8d9656d4223e5f402295",
+        "version": "d2d852f18a113912cb46d3443115c79e693ffb6cefad9d590cc296cfcaf2509a",
         "signature": "b82491e2990291580288c5602d4c017238977749d52b17391f0e45d9a29be644",
         "affectsGlobalScope": false
       },
@@ -2121,9 +2141,19 @@
         "signature": "7b5ed961a0e03965299591d73de8b8c41e8a68105ff4fc07a240b0dfb94a5a3d",
         "affectsGlobalScope": false
       },
+      "../src/filters/all-exceptions.ts": {
+        "version": "adae7dc38485735b380c5853abee15acbfa34f250f48614d3273713eebd8732c",
+        "signature": "6984ae9180829afe1f722aa9dc1ace67129494cad84c2c0c8df8719ba1769a2c",
+        "affectsGlobalScope": false
+      },
       "../src/main.ts": {
-        "version": "54f75e2ce3fd0d5816c9596701e5b21880eb767a4b93f4cc3a74cf7f6d266262",
+        "version": "a7f1f72620b11777ef8206fb14dc0995e5524abb54470cc1deff1a73d959fb16",
         "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+        "affectsGlobalScope": false
+      },
+      "../src/lessons/entities/lessons.entity.ts": {
+        "version": "8ceaaa9a66b3d2644141d474b318d9c9b075005b8f9fb6345951c763edd0ccf8",
+        "signature": "76996fa00e0bc888e10fb43fc77ef4542db734dee66e129c5def37c546d843a6",
         "affectsGlobalScope": false
       },
       "../src/users/dto/user-list.dto.ts": {
@@ -3937,6 +3967,7 @@
         "../src/app.controller.ts",
         "../src/app.service.ts",
         "../src/courses/courses.module.ts",
+        "../src/lessons/lessons.module.ts",
         "../src/mongoose-config.service.ts",
         "../src/users/users.module.ts"
       ],
@@ -3951,7 +3982,6 @@
         "../src/courses/dto/create-course.dto.ts",
         "../src/courses/dto/update-course.dto.ts",
         "../src/decorators/paginator.ts",
-        "../src/filters/all-exceptions.ts",
         "../src/pipes/joi-validation.pipe.ts"
       ],
       "../src/courses/courses.module.ts": [
@@ -3987,6 +4017,34 @@
       "../src/filters/all-exceptions.ts": [
         "../node_modules/@nestjs/common/index.d.ts"
       ],
+      "../src/lessons/dto/create-lesson.ts": [
+        "../node_modules/@nestjs/swagger/index.d.ts",
+        "../node_modules/@types/hapi__joi/index.d.ts",
+        "../src/courses/entities/course.entity.ts"
+      ],
+      "../src/lessons/lessons.controller.ts": [
+        "../node_modules/@nestjs/common/index.d.ts",
+        "../node_modules/@nestjs/swagger/index.d.ts",
+        "../node_modules/@types/express/index.d.ts",
+        "../src/decorators/paginator.ts",
+        "../src/lessons/dto/create-lesson.ts",
+        "../src/lessons/lessons.service.ts",
+        "../src/pipes/joi-validation.pipe.ts"
+      ],
+      "../src/lessons/lessons.module.ts": [
+        "../node_modules/@nestjs/common/index.d.ts",
+        "../node_modules/@nestjs/mongoose/index.d.ts",
+        "../src/lessons/lessons.controller.ts",
+        "../src/lessons/lessons.service.ts",
+        "../src/schemas/lesson.schema.ts"
+      ],
+      "../src/lessons/lessons.service.ts": [
+        "../node_modules/@nestjs/common/index.d.ts",
+        "../node_modules/@nestjs/mongoose/index.d.ts",
+        "../node_modules/mongoose/index.d.ts",
+        "../src/lessons/dto/create-lesson.ts",
+        "../src/schemas/lesson.schema.ts"
+      ],
       "../src/main.ts": [
         "../node_modules/@nestjs/core/index.d.ts",
         "../node_modules/@nestjs/swagger/index.d.ts",
@@ -4007,6 +4065,11 @@
       "../src/schemas/course.schema.ts": [
         "../node_modules/@nestjs/mongoose/index.d.ts",
         "../node_modules/mongoose/index.d.ts"
+      ],
+      "../src/schemas/lesson.schema.ts": [
+        "../node_modules/@nestjs/mongoose/index.d.ts",
+        "../node_modules/mongoose/index.d.ts",
+        "../src/courses/entities/course.entity.ts"
       ],
       "../src/schemas/user.schema.ts": [
         "../node_modules/@nestjs/mongoose/index.d.ts",
@@ -5594,6 +5657,20 @@
       "../src/filters/all-exceptions.ts": [
         "../node_modules/@nestjs/common/index.d.ts"
       ],
+      "../src/lessons/dto/create-lesson.ts": [
+        "../node_modules/@types/hapi__joi/index.d.ts",
+        "../src/courses/entities/course.entity.ts"
+      ],
+      "../src/lessons/lessons.controller.ts": [
+        "../node_modules/@types/express/index.d.ts",
+        "../src/lessons/dto/create-lesson.ts",
+        "../src/lessons/lessons.service.ts"
+      ],
+      "../src/lessons/lessons.service.ts": [
+        "../node_modules/mongoose/index.d.ts",
+        "../src/lessons/dto/create-lesson.ts",
+        "../src/schemas/lesson.schema.ts"
+      ],
       "../src/mongoose-config.service.ts": [
         "../node_modules/@nestjs/mongoose/index.d.ts"
       ],
@@ -5602,6 +5679,9 @@
         "../node_modules/@types/hapi__joi/index.d.ts"
       ],
       "../src/schemas/course.schema.ts": [
+        "../node_modules/mongoose/index.d.ts"
+      ],
+      "../src/schemas/lesson.schema.ts": [
         "../node_modules/mongoose/index.d.ts"
       ],
       "../src/schemas/user.schema.ts": [
@@ -6099,11 +6179,17 @@
       "../src/courses/entities/course.entity.ts",
       "../src/decorators/paginator.ts",
       "../src/filters/all-exceptions.ts",
+      "../src/lessons/dto/create-lesson.ts",
+      "../src/lessons/entities/lessons.entity.ts",
+      "../src/lessons/lessons.controller.ts",
+      "../src/lessons/lessons.module.ts",
+      "../src/lessons/lessons.service.ts",
       "../src/main.ts",
       "../src/models/pagination.interface.ts",
       "../src/mongoose-config.service.ts",
       "../src/pipes/joi-validation.pipe.ts",
       "../src/schemas/course.schema.ts",
+      "../src/schemas/lesson.schema.ts",
       "../src/schemas/user.schema.ts",
       "../src/users/dto/check-code.dto.ts",
       "../src/users/dto/create-user.dto.ts",
@@ -6122,35 +6208,11 @@
         0
       ],
       [
-        "../src/courses/courses.controller.ts",
+        "../src/lessons/lessons.controller.ts",
         0
       ],
       [
-        "../src/courses/courses.module.ts",
-        0
-      ],
-      [
-        "../src/courses/courses.service.ts",
-        0
-      ],
-      [
-        "../src/main.ts",
-        0
-      ],
-      [
-        "../src/users/dto/update-user.dto.ts",
-        0
-      ],
-      [
-        "../src/users/users.controller.ts",
-        0
-      ],
-      [
-        "../src/users/users.module.ts",
-        0
-      ],
-      [
-        "../src/users/users.service.ts",
+        "../src/lessons/lessons.module.ts",
         0
       ]
     ]

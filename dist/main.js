@@ -9,16 +9,14 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __webpack_require__(1);
 const swagger_1 = __webpack_require__(2);
 const app_module_1 = __webpack_require__(3);
-const all_exceptions_1 = __webpack_require__(35);
+const all_exceptions_1 = __webpack_require__(40);
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     const options = new swagger_1.DocumentBuilder()
-        .setTitle('Nest JS api')
-        .setDescription('The nest API description')
+        .setTitle('PLC API')
+        .setDescription('Practical Legal Courses Backend API Documentation')
         .addBearerAuth()
         .setVersion('1.0')
-        .addTag('Users', 'Users Management')
-        .addTag('Courses', 'Courses Management')
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, options);
     swagger_1.SwaggerModule.setup('api', app, document);
@@ -62,17 +60,17 @@ const app_service_1 = __webpack_require__(8);
 const users_module_1 = __webpack_require__(9);
 const mongoose_config_service_1 = __webpack_require__(25);
 const courses_module_1 = __webpack_require__(26);
+const lessons_module_1 = __webpack_require__(35);
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
     common_1.Module({
         imports: [
             users_module_1.UsersModule,
+            courses_module_1.CoursesModule,
             config_module_1.ConfigModule.forRoot({ isGlobal: true }),
-            mongoose_module_1.MongooseModule.forRootAsync({
-                useClass: mongoose_config_service_1.MongooseConfigService
-            }),
-            courses_module_1.CoursesModule
+            mongoose_module_1.MongooseModule.forRootAsync({ useClass: mongoose_config_service_1.MongooseConfigService }),
+            lessons_module_1.LessonsModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService, mongoose_config_service_1.MongooseConfigService],
@@ -1105,8 +1103,8 @@ const common_1 = __webpack_require__(4);
 let MongooseConfigService = class MongooseConfigService {
     createMongooseOptions() {
         return {
-            uri: `mongodb+srv://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@cluster0.9ab1f.mongodb.net/${process.env.DATABASE_NAME}`,
-            useFindAndModify: false
+            uri: `mongodb+srv://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@plc.eqrk2.mongodb.net/${process.env.DATABASE_NAME}`,
+            useFindAndModify: false,
         };
     }
 };
@@ -1256,21 +1254,26 @@ let CoursesController = class CoursesController {
         this.coursesService = coursesService;
     }
     create(res, createCourseDto, next) {
-        this.coursesService.create(createCourseDto)
-            .then(course => { res.status(common_1.HttpStatus.CREATED).send(course); })
-            .catch(e => next(new common_1.InternalServerErrorException(e)));
+        this.coursesService
+            .create(createCourseDto)
+            .then((course) => {
+            res.status(common_1.HttpStatus.CREATED).send(course);
+        })
+            .catch((e) => next(new common_1.InternalServerErrorException(e)));
     }
     findAll() {
         return this.coursesService.findAll();
     }
     findOne(id, res, next) {
-        this.coursesService.findOne(id)
-            .then(course => res.status(common_1.HttpStatus.OK).send(course))
-            .catch(e => next(new common_1.InternalServerErrorException(e)));
+        this.coursesService
+            .findOne(id)
+            .then((course) => res.status(common_1.HttpStatus.OK).send(course))
+            .catch((e) => next(new common_1.InternalServerErrorException(e)));
     }
     update(id, res, updateCourseDto, next) {
-        this.coursesService.update(id, updateCourseDto)
-            .then(course => {
+        this.coursesService
+            .update(id, updateCourseDto)
+            .then((course) => {
             if (course) {
                 res.status(common_1.HttpStatus.OK).send(course);
             }
@@ -1278,19 +1281,22 @@ let CoursesController = class CoursesController {
                 throw new common_1.NotFoundException({ result: 'Course was not found!' });
             }
         })
-            .catch(e => next(new common_1.InternalServerErrorException(e.message)));
+            .catch((e) => next(new common_1.InternalServerErrorException(e.message)));
     }
     remove(id, res, next) {
-        this.coursesService.remove(id)
+        this.coursesService
+            .remove(id)
             .then(() => res.status(common_1.HttpStatus.NO_CONTENT).send(null))
-            .catch(e => next(new common_1.InternalServerErrorException(e.message)));
+            .catch((e) => next(new common_1.InternalServerErrorException(e.message)));
     }
 };
 __decorate([
     common_1.Post(),
     swagger_1.ApiCreatedResponse({ type: create_course_dto_1.CreateCourseDto }),
     common_1.UsePipes(new joi_validation_pipe_1.JoiValidationPipe(create_course_dto_1.createCourseSchema)),
-    __param(0, common_1.Res()), __param(1, common_1.Body()), __param(2, common_1.Next()),
+    __param(0, common_1.Res()),
+    __param(1, common_1.Body()),
+    __param(2, common_1.Next()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [typeof (_a = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _a : Object, typeof (_b = typeof create_course_dto_1.CreateCourseDto !== "undefined" && create_course_dto_1.CreateCourseDto) === "function" ? _b : Object, typeof (_c = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _c : Object]),
     __metadata("design:returntype", void 0)
@@ -1305,7 +1311,9 @@ __decorate([
 __decorate([
     common_1.Get(':id'),
     swagger_1.ApiOkResponse({ type: create_course_dto_1.CreateCourseDto }),
-    __param(0, common_1.Param('id')), __param(1, common_1.Res()), __param(2, common_1.Next()),
+    __param(0, common_1.Param('id')),
+    __param(1, common_1.Res()),
+    __param(2, common_1.Next()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, typeof (_d = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _d : Object, typeof (_e = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _e : Object]),
     __metadata("design:returntype", void 0)
@@ -1313,7 +1321,10 @@ __decorate([
 __decorate([
     common_1.Put(':id'),
     swagger_1.ApiOkResponse({ type: create_course_dto_1.CreateCourseDto }),
-    __param(0, common_1.Param('id')), __param(1, common_1.Res()), __param(2, common_1.Body(new joi_validation_pipe_1.JoiValidationPipe(create_course_dto_1.createCourseSchema))), __param(3, common_1.Next()),
+    __param(0, common_1.Param('id')),
+    __param(1, common_1.Res()),
+    __param(2, common_1.Body(new joi_validation_pipe_1.JoiValidationPipe(create_course_dto_1.createCourseSchema))),
+    __param(3, common_1.Next()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, typeof (_f = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _f : Object, typeof (_g = typeof update_course_dto_1.UpdateCourseDto !== "undefined" && update_course_dto_1.UpdateCourseDto) === "function" ? _g : Object, typeof (_h = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _h : Object]),
     __metadata("design:returntype", void 0)
@@ -1321,7 +1332,9 @@ __decorate([
 __decorate([
     common_1.Delete(':id'),
     swagger_1.ApiNoContentResponse(),
-    __param(0, common_1.Param('id')), __param(1, common_1.Res()), __param(2, common_1.Next()),
+    __param(0, common_1.Param('id')),
+    __param(1, common_1.Res()),
+    __param(2, common_1.Next()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, typeof (_j = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _j : Object, typeof (_k = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _k : Object]),
     __metadata("design:returntype", void 0)
@@ -1538,6 +1551,369 @@ exports.CourseSchema = mongoose_1.SchemaFactory.createForClass(Course);
 
 /***/ }),
 /* 35 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.LessonsModule = void 0;
+const common_1 = __webpack_require__(4);
+const lessons_service_1 = __webpack_require__(36);
+const lessons_controller_1 = __webpack_require__(38);
+const mongoose_1 = __webpack_require__(11);
+const lesson_schema_1 = __webpack_require__(37);
+let LessonsModule = class LessonsModule {
+};
+LessonsModule = __decorate([
+    common_1.Module({
+        imports: [mongoose_1.MongooseModule.forFeature([{ name: lesson_schema_1.Lesson.name, schema: lesson_schema_1.LessonSchema }])],
+        providers: [lessons_service_1.LessonsService],
+        controllers: [lessons_controller_1.LessonsController],
+    })
+], LessonsModule);
+exports.LessonsModule = LessonsModule;
+
+
+/***/ }),
+/* 36 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var _a;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.LessonsService = void 0;
+const common_1 = __webpack_require__(4);
+const mongoose_1 = __webpack_require__(11);
+const mongoose_2 = __webpack_require__(13);
+const lesson_schema_1 = __webpack_require__(37);
+let LessonsService = class LessonsService {
+    constructor(model) {
+        this.model = model;
+    }
+    create(data) {
+        const lesson = new this.model(data);
+        return lesson.save();
+    }
+    findAll() {
+        return this.model.find().sort('createdAt').exec();
+    }
+    async findOne(id) {
+        const lesson = await this.model.findById(id).exec();
+        if (!lesson) {
+            throw new common_1.NotFoundException('Курс не знайдений');
+        }
+        return lesson;
+    }
+    update(id, updateCourseDto) {
+        return this.model.findByIdAndUpdate(id, { $set: updateCourseDto }, { new: true }).exec();
+    }
+    remove(id) {
+        return this.model.findByIdAndDelete(id).exec();
+    }
+};
+LessonsService = __decorate([
+    common_1.Injectable(),
+    __param(0, mongoose_1.InjectModel(lesson_schema_1.Lesson.name)),
+    __metadata("design:paramtypes", [typeof (_a = typeof mongoose_2.Model !== "undefined" && mongoose_2.Model) === "function" ? _a : Object])
+], LessonsService);
+exports.LessonsService = LessonsService;
+
+
+/***/ }),
+/* 37 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a, _b, _c, _d;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.LessonSchema = exports.Lesson = void 0;
+const mongoose_1 = __webpack_require__(11);
+const mongoose = __webpack_require__(13);
+const course_entity_1 = __webpack_require__(28);
+let Lesson = class Lesson {
+};
+__decorate([
+    mongoose_1.Prop(),
+    __metadata("design:type", typeof (_b = typeof mongoose !== "undefined" && (_a = mongoose.Types) !== void 0 && _a.ObjectId) === "function" ? _b : Object)
+], Lesson.prototype, "id", void 0);
+__decorate([
+    mongoose_1.Prop({ default: null, required: true }),
+    __metadata("design:type", String)
+], Lesson.prototype, "name", void 0);
+__decorate([
+    mongoose_1.Prop({ default: null }),
+    __metadata("design:type", String)
+], Lesson.prototype, "context", void 0);
+__decorate([
+    mongoose_1.Prop({ default: null, ref: 'courses', required: true }),
+    __metadata("design:type", typeof (_d = typeof mongoose !== "undefined" && (_c = mongoose.Types) !== void 0 && _c.ObjectId) === "function" ? _d : Object)
+], Lesson.prototype, "courseId", void 0);
+__decorate([
+    mongoose_1.Prop({ default: false }),
+    __metadata("design:type", Boolean)
+], Lesson.prototype, "free", void 0);
+__decorate([
+    mongoose_1.Prop({ default: course_entity_1.ECourseStatus.DRAFT }),
+    __metadata("design:type", Number)
+], Lesson.prototype, "status", void 0);
+__decorate([
+    mongoose_1.Prop({ default: Date.now() }),
+    __metadata("design:type", Number)
+], Lesson.prototype, "createdAt", void 0);
+__decorate([
+    mongoose_1.Prop({ default: Date.now() }),
+    __metadata("design:type", Number)
+], Lesson.prototype, "updatedAt", void 0);
+Lesson = __decorate([
+    mongoose_1.Schema({ versionKey: false })
+], Lesson);
+exports.Lesson = Lesson;
+exports.LessonSchema = mongoose_1.SchemaFactory.createForClass(Lesson);
+
+
+/***/ }),
+/* 38 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.LessonsController = void 0;
+const common_1 = __webpack_require__(4);
+const swagger_1 = __webpack_require__(2);
+const express_1 = __webpack_require__(17);
+const paginator_1 = __webpack_require__(22);
+const joi_validation_pipe_1 = __webpack_require__(30);
+const create_lesson_1 = __webpack_require__(39);
+const lessons_service_1 = __webpack_require__(36);
+let LessonsController = class LessonsController {
+    constructor(_ls) {
+        this._ls = _ls;
+    }
+    create(res, createCourseDto, next) {
+        this._ls
+            .create(createCourseDto)
+            .then((course) => {
+            res.status(common_1.HttpStatus.CREATED).send(course);
+        })
+            .catch((e) => next(new common_1.InternalServerErrorException(e)));
+    }
+    findAll() {
+        return this._ls.findAll();
+    }
+    findOne(id, res, next) {
+        this._ls
+            .findOne(id)
+            .then((course) => res.status(common_1.HttpStatus.OK).send(course))
+            .catch((e) => next(new common_1.InternalServerErrorException(e)));
+    }
+    update(id, res, data, next) {
+        this._ls
+            .update(id, data)
+            .then((course) => {
+            if (course) {
+                res.status(common_1.HttpStatus.OK).send(course);
+            }
+            else {
+                throw new common_1.NotFoundException({ result: 'Lesson was not found!' });
+            }
+        })
+            .catch((e) => next(new common_1.InternalServerErrorException(e.message)));
+    }
+    remove(id, res, next) {
+        this._ls
+            .remove(id)
+            .then(() => res.status(common_1.HttpStatus.NO_CONTENT).send(null))
+            .catch((e) => next(new common_1.InternalServerErrorException(e.message)));
+    }
+};
+__decorate([
+    common_1.Post(),
+    swagger_1.ApiCreatedResponse({ type: create_lesson_1.CreateLessonDto }),
+    common_1.UsePipes(new joi_validation_pipe_1.JoiValidationPipe(create_lesson_1.createLessonSchema)),
+    __param(0, common_1.Res()),
+    __param(1, common_1.Body()),
+    __param(2, common_1.Next()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_a = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _a : Object, typeof (_b = typeof create_lesson_1.CreateLessonDto !== "undefined" && create_lesson_1.CreateLessonDto) === "function" ? _b : Object, typeof (_c = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _c : Object]),
+    __metadata("design:returntype", void 0)
+], LessonsController.prototype, "create", null);
+__decorate([
+    common_1.Get(),
+    paginator_1.ApiPaginatedResponse(create_lesson_1.CreateLessonDto),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], LessonsController.prototype, "findAll", null);
+__decorate([
+    common_1.Get(':id'),
+    swagger_1.ApiOkResponse({ type: create_lesson_1.CreateLessonDto }),
+    __param(0, common_1.Param('id')),
+    __param(1, common_1.Res()),
+    __param(2, common_1.Next()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, typeof (_d = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _d : Object, typeof (_e = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _e : Object]),
+    __metadata("design:returntype", void 0)
+], LessonsController.prototype, "findOne", null);
+__decorate([
+    common_1.Put(':id'),
+    swagger_1.ApiOkResponse({ type: create_lesson_1.CreateLessonDto }),
+    __param(0, common_1.Param('id')),
+    __param(1, common_1.Res()),
+    __param(2, common_1.Body(new joi_validation_pipe_1.JoiValidationPipe(create_lesson_1.createLessonSchema))),
+    __param(3, common_1.Next()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, typeof (_f = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _f : Object, typeof (_g = typeof create_lesson_1.CreateLessonDto !== "undefined" && create_lesson_1.CreateLessonDto) === "function" ? _g : Object, typeof (_h = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _h : Object]),
+    __metadata("design:returntype", void 0)
+], LessonsController.prototype, "update", null);
+__decorate([
+    common_1.Delete(':id'),
+    swagger_1.ApiNoContentResponse(),
+    __param(0, common_1.Param('id')),
+    __param(1, common_1.Res()),
+    __param(2, common_1.Next()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, typeof (_j = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _j : Object, typeof (_k = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _k : Object]),
+    __metadata("design:returntype", void 0)
+], LessonsController.prototype, "remove", null);
+LessonsController = __decorate([
+    common_1.Controller('lessons'),
+    swagger_1.ApiTags('Lessons'),
+    __metadata("design:paramtypes", [typeof (_l = typeof lessons_service_1.LessonsService !== "undefined" && lessons_service_1.LessonsService) === "function" ? _l : Object])
+], LessonsController);
+exports.LessonsController = LessonsController;
+
+
+/***/ }),
+/* 39 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.createLessonSchema = exports.CreateLessonDto = void 0;
+const swagger_1 = __webpack_require__(2);
+const Joi = __webpack_require__(31);
+const course_entity_1 = __webpack_require__(28);
+class CreateLessonDto {
+}
+__decorate([
+    swagger_1.ApiProperty({
+        required: false,
+        readOnly: true,
+        type: String,
+    }),
+    __metadata("design:type", String)
+], CreateLessonDto.prototype, "id", void 0);
+__decorate([
+    swagger_1.ApiProperty({
+        required: true,
+        type: String,
+        default: 'name'
+    }),
+    __metadata("design:type", String)
+], CreateLessonDto.prototype, "name", void 0);
+__decorate([
+    swagger_1.ApiProperty({
+        required: false,
+        type: String,
+        default: null
+    }),
+    __metadata("design:type", String)
+], CreateLessonDto.prototype, "context", void 0);
+__decorate([
+    swagger_1.ApiProperty({
+        required: false,
+        type: Number,
+        enum: course_entity_1.ECourseStatus,
+        default: course_entity_1.ECourseStatus.DRAFT
+    }),
+    __metadata("design:type", typeof (_a = typeof course_entity_1.ECourseStatus !== "undefined" && course_entity_1.ECourseStatus) === "function" ? _a : Object)
+], CreateLessonDto.prototype, "status", void 0);
+__decorate([
+    swagger_1.ApiProperty({
+        required: false,
+        type: Boolean,
+        default: false
+    }),
+    __metadata("design:type", Boolean)
+], CreateLessonDto.prototype, "free", void 0);
+__decorate([
+    swagger_1.ApiProperty({
+        type: Number,
+        required: false,
+        readOnly: true,
+        default: Date.now()
+    }),
+    __metadata("design:type", Number)
+], CreateLessonDto.prototype, "createdAt", void 0);
+__decorate([
+    swagger_1.ApiProperty({
+        type: Number,
+        required: false,
+        readOnly: true,
+        default: Date.now()
+    }),
+    __metadata("design:type", Number)
+], CreateLessonDto.prototype, "updatedAt", void 0);
+exports.CreateLessonDto = CreateLessonDto;
+exports.createLessonSchema = Joi.object({
+    name: Joi.string().required(),
+    context: Joi.string().allow(null, "").optional(),
+    free: Joi.boolean(),
+    status: Joi.valid(course_entity_1.ECourseStatus.DRAFT, course_entity_1.ECourseStatus.PUBLISHED)
+});
+
+
+/***/ }),
+/* 40 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 

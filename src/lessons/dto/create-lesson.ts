@@ -1,8 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ECourseStatus } from "../entities/course.entity";
 import * as Joi from '@hapi/joi';
+import { ECourseStatus } from "src/courses/entities/course.entity";
 
-export class CreateCourseDto {
+export class CreateLessonDto {
     @ApiProperty({
         required: false,
         readOnly: true,
@@ -14,15 +14,15 @@ export class CreateCourseDto {
         required: true,
         type: String,
         default: 'name'
-
     })
     name: string;
+
     @ApiProperty({
         required: false,
         type: String,
-        default: 'description'
+        default: null
     })
-    description: string;
+    context: string;
 
     @ApiProperty({
         required: false,
@@ -34,9 +34,10 @@ export class CreateCourseDto {
 
     @ApiProperty({
         required: false,
-        type: Number
+        type: Boolean,
+        default: false
     })
-    price: number;
+    free: boolean;
 
     @ApiProperty({
         type: Number,
@@ -54,9 +55,9 @@ export class CreateCourseDto {
     readonly updatedAt: number;
 }
 
-export const createCourseSchema = Joi.object({
+export const createLessonSchema = Joi.object({
     name: Joi.string().required(),
-    description: Joi.string().allow(null, "").optional(),
-    price: Joi.number().optional().min(0),
+    context: Joi.string().allow(null, "").optional(),
+    free: Joi.boolean(),
     status: Joi.valid(ECourseStatus.DRAFT, ECourseStatus.PUBLISHED)
 });
