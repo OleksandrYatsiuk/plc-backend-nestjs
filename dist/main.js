@@ -13,9 +13,7 @@ const all_exceptions_1 = __webpack_require__(40);
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule, {
         cors: {
-            allowedHeaders: 'Content-Type, Authorization, Accept, Origin',
-            origin: '*',
-            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
+            allowedHeaders: 'Content-Type, Authorization, Accept, Origin'
         }
     });
     const options = new swagger_1.DocumentBuilder()
@@ -527,7 +525,7 @@ let UsersController = class UsersController {
     }
     remove(id, res) {
         this.usersService.remove(id)
-            .then(() => res.status(common_1.HttpStatus.NO_CONTENT))
+            .then(() => res.status(common_1.HttpStatus.NO_CONTENT).send())
             .catch(e => res.status(common_1.HttpStatus.INTERNAL_SERVER_ERROR).send({ message: e.message, stack: e }));
     }
     registerAdmin(user, res) {

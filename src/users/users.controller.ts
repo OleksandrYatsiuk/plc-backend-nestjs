@@ -61,7 +61,7 @@ export class UsersController {
   @ApiInternalServerErrorResponse()
   remove(@Param('id') id: string, @Res() res: Response): void {
     this.usersService.remove(id)
-      .then(() => res.status(HttpStatus.NO_CONTENT))
+      .then(() => res.status(HttpStatus.NO_CONTENT).send())
       .catch(e => res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({ message: e.message, stack: e }))
   }
 

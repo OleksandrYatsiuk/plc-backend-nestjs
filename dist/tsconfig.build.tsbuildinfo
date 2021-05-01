@@ -1872,7 +1872,7 @@
         "affectsGlobalScope": false
       },
       "../src/users/users.controller.ts": {
-        "version": "c5483d7fbd7271e610efcac44c22f6dbe69394a28611b065fe5fc9b66244b7d5",
+        "version": "5500e270e46620e9f721c55aa15ea79910d6950f506b8006b3e04c9a29e03b08",
         "signature": "6ae4d62343dfc9c89c5dfc132a03b20518df7d74d95a2f684ada4a9e50708a35",
         "affectsGlobalScope": false
       },
@@ -2147,7 +2147,7 @@
         "affectsGlobalScope": false
       },
       "../src/main.ts": {
-        "version": "dd8110ee6ad41a903f92c8b1bb48f038147e72de67c9048e37d74a8063a8e788",
+        "version": "6aaea2813f94bfb125bac165b92b32333f1172484fba6c0e2697a2128f93c0ed",
         "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
         "affectsGlobalScope": false
       },
