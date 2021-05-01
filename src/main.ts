@@ -4,7 +4,13 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './filters/all-exceptions';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: { allowedHeaders: 'Content-Type, Authorization, Accept, Origin', origin: '*' } });
+  const app = await NestFactory.create(AppModule, {
+    cors: {
+      allowedHeaders: 'Content-Type, Authorization, Accept, Origin',
+      origin: '*',
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE'
+    }
+  });
 
   const options = new DocumentBuilder()
     .setTitle('PLC API')
