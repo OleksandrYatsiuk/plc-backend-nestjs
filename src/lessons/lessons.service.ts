@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { PaginatedDto } from 'src/models/pagination.interface';
 import { Lesson, LessonDocument } from 'src/schemas/lesson.schema';
 import { CreateLessonDto } from './dto/create-lesson';
 
@@ -13,8 +14,14 @@ export class LessonsService {
         return lesson.save();
     }
 
-    findAll(): Promise<any> {
-        return this.model.find().sort('createdAt').exec();
+    async findAll(page: number, limit: number): Promise<PaginatedDto<Lesson[]>> {
+        page = page - 1;
+        const count = await this.model.countDocuments();
+        const lessons = await this.model.find().sort({ updatedAt: 1 }).limit(limit).skip(limit * page);
+        return {
+            total: count, limit, page: page + 1,
+            result: lessons
+        };
     }
 
     async findOne(id: string): Promise<LessonDocument> {

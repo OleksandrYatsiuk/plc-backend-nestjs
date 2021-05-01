@@ -36,7 +36,7 @@ export class UsersService {
   }
 
 
-  async findAll(page: number, limit: number): Promise<PaginatedDto<User>> {
+  async findAll(page: number, limit: number): Promise<PaginatedDto<User[]>> {
     page = page - 1;
     const count = await this.db.countDocuments();
     const users = await this.db.find().sort({ updatedAt: 1 }).limit(limit).skip(limit * page);

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class PaginatedDto<TData> {
+export class PaginatedDto<T = any[]> {
   @ApiProperty()
   total: number;
 
@@ -10,5 +10,5 @@ export class PaginatedDto<TData> {
   @ApiProperty()
   page: number;
 
-  result: TData[];
+  result: T;
 }

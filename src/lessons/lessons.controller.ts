@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpStatus, InternalServerErrorException, Next, NotFoundException, Param, Post, Put, Res, UsePipes } from '@nestjs/common';
-import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpStatus, InternalServerErrorException, Next, NotFoundException, Param, Post, Put, Query, Res, UsePipes } from '@nestjs/common';
+import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { ApiPaginatedResponse } from 'src/decorators/paginator';
 import { JoiValidationPipe } from 'src/pipes/joi-validation.pipe';
@@ -29,9 +29,17 @@ export class LessonsController {
 
     @Get()
     @ApiPaginatedResponse(CreateLessonDto)
-    findAll() {
-        return this._ls.findAll();
+    @ApiQuery({ name: 'page', type: Number, required: false })
+    @ApiQuery({ name: 'limit', type: Number, required: false })
+
+    findAll(@Query() query, @Param() params, @Res() res: Response): void {
+        this._ls.findAll(+query?.page || 1, +query?.limit || 10)
+            .then(result => res.status(HttpStatus.OK).send(result))
+            .catch(e => {
+                throw new InternalServerErrorException(e.message);
+            })
     }
+
 
     @Get(':id')
     @ApiOkResponse({ type: CreateLessonDto })
