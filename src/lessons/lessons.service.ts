@@ -17,7 +17,7 @@ export class LessonsService {
     async findAll(page: number, limit: number): Promise<PaginatedDto<Lesson[]>> {
         page = page - 1;
         const count = await this.model.countDocuments();
-        const lessons = await this.model.find().sort({ updatedAt: 1 }).limit(limit).skip(limit * page);
+        const lessons = await this.model.find().sort({ createdAt: 1 }).limit(limit).skip(limit * page);
         return {
             total: count, limit, page: page + 1,
             result: lessons
