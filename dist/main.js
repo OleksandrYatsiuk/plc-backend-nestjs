@@ -11,7 +11,7 @@ const swagger_1 = __webpack_require__(2);
 const app_module_1 = __webpack_require__(3);
 const all_exceptions_1 = __webpack_require__(40);
 async function bootstrap() {
-    const app = await core_1.NestFactory.create(app_module_1.AppModule, { cors: { allowedHeaders: 'Content-Type, Authorization, Accept, Origin' } });
+    const app = await core_1.NestFactory.create(app_module_1.AppModule, { cors: { allowedHeaders: 'Content-Type, Authorization, Accept, Origin', origin: '*' } });
     const options = new swagger_1.DocumentBuilder()
         .setTitle('PLC API')
         .setDescription('Practical Legal Courses Backend API Documentation')
