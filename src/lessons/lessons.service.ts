@@ -3,7 +3,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { PaginatedDto } from 'src/models/pagination.interface';
 import { Lesson, LessonDocument } from 'src/schemas/lesson.schema';
+import { paginateUtils } from 'src/utils/paginate';
 import { CreateLessonDto } from './dto/create-lesson';
+import { IQuerySearchLessons } from './entities/lessons.entity';
+
+
+
 
 @Injectable()
 export class LessonsService {
@@ -14,12 +19,13 @@ export class LessonsService {
         return lesson.save();
     }
 
-    async findAll(page: number, limit: number): Promise<PaginatedDto<Lesson[]>> {
-        page = page - 1;
-        const count = await this.model.countDocuments();
-        const lessons = await this.model.find().sort({ createdAt: 1 }).limit(limit).skip(limit * page);
+    async findAll(query: IQuerySearchLessons): Promise<PaginatedDto<Lesson[]>> {
+        const lessons = await paginateUtils(this.model, query);
+
         return {
-            total: count, limit, page: page + 1,
+            total: lessons?.length || 0,
+            limit: query?.limit || 20,
+            page: query.page || 1,
             result: lessons
         };
     }

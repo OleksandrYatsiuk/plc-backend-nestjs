@@ -12,3 +12,9 @@ export class PaginatedDto<T = any[]> {
 
   result: T;
 }
+
+
+export interface IQueryPaginationSearch {
+  limit: number;
+  page: number
+}

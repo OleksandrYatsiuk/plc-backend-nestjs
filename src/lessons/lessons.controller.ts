@@ -4,6 +4,7 @@ import { NextFunction, Response } from 'express';
 import { ApiPaginatedResponse } from 'src/decorators/paginator';
 import { JoiValidationPipe } from 'src/pipes/joi-validation.pipe';
 import { CreateLessonDto, createLessonSchema } from './dto/create-lesson';
+import { IQuerySearchLessons } from './entities/lessons.entity';
 import { LessonsService } from './lessons.service';
 
 @Controller('lessons')
@@ -32,8 +33,8 @@ export class LessonsController {
     @ApiQuery({ name: 'page', type: Number, required: false })
     @ApiQuery({ name: 'limit', type: Number, required: false })
 
-    findAll(@Query() query, @Param() params, @Res() res: Response): void {
-        this._ls.findAll(+query?.page || 1, +query?.limit || 10)
+    findAll(@Query() query: IQuerySearchLessons, @Param() params, @Res() res: Response): void {
+        this._ls.findAll(query)
             .then(result => res.status(HttpStatus.OK).send(result))
             .catch(e => {
                 throw new InternalServerErrorException(e.message);

@@ -9,7 +9,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __webpack_require__(1);
 const swagger_1 = __webpack_require__(2);
 const app_module_1 = __webpack_require__(3);
-const all_exceptions_1 = __webpack_require__(40);
+const all_exceptions_1 = __webpack_require__(49);
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule, {
         cors: {
@@ -64,7 +64,8 @@ const app_service_1 = __webpack_require__(8);
 const users_module_1 = __webpack_require__(9);
 const mongoose_config_service_1 = __webpack_require__(25);
 const courses_module_1 = __webpack_require__(26);
-const lessons_module_1 = __webpack_require__(35);
+const lessons_module_1 = __webpack_require__(36);
+const certificates_module_1 = __webpack_require__(41);
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -72,9 +73,10 @@ AppModule = __decorate([
         imports: [
             users_module_1.UsersModule,
             courses_module_1.CoursesModule,
+            certificates_module_1.CertificatesModule,
+            lessons_module_1.LessonsModule,
             config_module_1.ConfigModule.forRoot({ isGlobal: true }),
             mongoose_module_1.MongooseModule.forRootAsync({ useClass: mongoose_config_service_1.MongooseConfigService }),
-            lessons_module_1.LessonsModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService, mongoose_config_service_1.MongooseConfigService],
@@ -1133,9 +1135,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CoursesModule = void 0;
 const common_1 = __webpack_require__(4);
 const courses_service_1 = __webpack_require__(27);
-const courses_controller_1 = __webpack_require__(29);
+const courses_controller_1 = __webpack_require__(30);
 const mongoose_1 = __webpack_require__(11);
-const course_schema_1 = __webpack_require__(34);
+const course_schema_1 = __webpack_require__(35);
 const course_entity_1 = __webpack_require__(28);
 let CoursesModule = class CoursesModule {
 };
@@ -1173,6 +1175,7 @@ const common_1 = __webpack_require__(4);
 const course_entity_1 = __webpack_require__(28);
 const mongoose_1 = __webpack_require__(13);
 const mongoose_2 = __webpack_require__(11);
+const paginate_1 = __webpack_require__(29);
 let CoursesService = class CoursesService {
     constructor(model) {
         this.model = model;
@@ -1181,13 +1184,13 @@ let CoursesService = class CoursesService {
         const course = new this.model(createCourseDto);
         return course.save();
     }
-    async findAll(page, limit) {
-        page = page - 1;
-        const count = await this.model.countDocuments();
-        const lessons = await this.model.find().sort({ createdAt: 1 }).limit(limit).skip(limit * page);
+    async findAll(query) {
+        const courses = await paginate_1.paginateUtils(this.model, query);
         return {
-            total: count, limit, page: page + 1,
-            result: lessons
+            total: (courses === null || courses === void 0 ? void 0 : courses.length) || 0,
+            page: query.page | 1,
+            limit: query.limit || 20,
+            result: courses
         };
     }
     findOne(id) {
@@ -1233,6 +1236,22 @@ var ECourseStatus;
 
 /***/ }),
 /* 29 */
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.paginateUtils = void 0;
+function paginateUtils(model, query, filter = {}) {
+    const limit = Number(query.limit || 20);
+    const page = Number(query.page - 1 || 0);
+    Object.keys(filter).forEach(key => filter[key] === undefined && delete filter[key]);
+    return model.find().sort({ createdAt: 1 }).limit(limit).skip(limit * page);
+}
+exports.paginateUtils = paginateUtils;
+
+
+/***/ }),
+/* 30 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1255,16 +1274,16 @@ const common_1 = __webpack_require__(4);
 const swagger_1 = __webpack_require__(2);
 const express_1 = __webpack_require__(17);
 const paginator_1 = __webpack_require__(22);
-const joi_validation_pipe_1 = __webpack_require__(30);
+const joi_validation_pipe_1 = __webpack_require__(31);
 const courses_service_1 = __webpack_require__(27);
-const create_course_dto_1 = __webpack_require__(32);
-const update_course_dto_1 = __webpack_require__(33);
+const create_course_dto_1 = __webpack_require__(33);
+const update_course_dto_1 = __webpack_require__(34);
 let CoursesController = class CoursesController {
-    constructor(coursesService) {
-        this.coursesService = coursesService;
+    constructor(_cs) {
+        this._cs = _cs;
     }
     create(res, createCourseDto, next) {
-        this.coursesService
+        this._cs
             .create(createCourseDto)
             .then((course) => {
             res.status(common_1.HttpStatus.CREATED).send(course);
@@ -1272,20 +1291,20 @@ let CoursesController = class CoursesController {
             .catch((e) => next(new common_1.InternalServerErrorException(e)));
     }
     findAll(query, params, res) {
-        this.coursesService.findAll(+(query === null || query === void 0 ? void 0 : query.page) || 1, +(query === null || query === void 0 ? void 0 : query.limit) || 10)
+        this._cs.findAll(query)
             .then(result => res.status(common_1.HttpStatus.OK).send(result))
             .catch(e => {
             throw new common_1.InternalServerErrorException(e.message);
         });
     }
     findOne(id, res, next) {
-        this.coursesService
+        this._cs
             .findOne(id)
             .then((course) => res.status(common_1.HttpStatus.OK).send(course))
             .catch((e) => next(new common_1.InternalServerErrorException(e)));
     }
     update(id, res, updateCourseDto, next) {
-        this.coursesService
+        this._cs
             .update(id, updateCourseDto)
             .then((course) => {
             if (course) {
@@ -1298,7 +1317,7 @@ let CoursesController = class CoursesController {
             .catch((e) => next(new common_1.InternalServerErrorException(e.message)));
     }
     remove(id, res, next) {
-        this.coursesService
+        this._cs
             .remove(id)
             .then(() => res.status(common_1.HttpStatus.NO_CONTENT).send(null))
             .catch((e) => next(new common_1.InternalServerErrorException(e.message)));
@@ -1365,7 +1384,7 @@ exports.CoursesController = CoursesController;
 
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1382,7 +1401,7 @@ var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.JoiValidationPipe = void 0;
 const common_1 = __webpack_require__(4);
-const joi_1 = __webpack_require__(31);
+const joi_1 = __webpack_require__(32);
 let JoiValidationPipe = class JoiValidationPipe {
     constructor(_schema) {
         this._schema = _schema;
@@ -1403,13 +1422,13 @@ exports.JoiValidationPipe = JoiValidationPipe;
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ ((module) => {
 
 module.exports = require("@hapi/joi");;
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1427,7 +1446,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createCourseSchema = exports.CreateCourseDto = void 0;
 const swagger_1 = __webpack_require__(2);
 const course_entity_1 = __webpack_require__(28);
-const Joi = __webpack_require__(31);
+const Joi = __webpack_require__(32);
 class CreateCourseDto {
 }
 __decorate([
@@ -1498,20 +1517,20 @@ exports.createCourseSchema = Joi.object({
 
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UpdateCourseDto = void 0;
-const create_course_dto_1 = __webpack_require__(32);
+const create_course_dto_1 = __webpack_require__(33);
 class UpdateCourseDto extends create_course_dto_1.CreateCourseDto {
 }
 exports.UpdateCourseDto = UpdateCourseDto;
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1567,7 +1586,7 @@ exports.CourseSchema = mongoose_1.SchemaFactory.createForClass(Course);
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1580,10 +1599,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LessonsModule = void 0;
 const common_1 = __webpack_require__(4);
-const lessons_service_1 = __webpack_require__(36);
-const lessons_controller_1 = __webpack_require__(38);
+const lessons_service_1 = __webpack_require__(37);
+const lessons_controller_1 = __webpack_require__(39);
 const mongoose_1 = __webpack_require__(11);
-const lesson_schema_1 = __webpack_require__(37);
+const lesson_schema_1 = __webpack_require__(38);
 let LessonsModule = class LessonsModule {
 };
 LessonsModule = __decorate([
@@ -1597,7 +1616,7 @@ exports.LessonsModule = LessonsModule;
 
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1619,7 +1638,8 @@ exports.LessonsService = void 0;
 const common_1 = __webpack_require__(4);
 const mongoose_1 = __webpack_require__(11);
 const mongoose_2 = __webpack_require__(13);
-const lesson_schema_1 = __webpack_require__(37);
+const lesson_schema_1 = __webpack_require__(38);
+const paginate_1 = __webpack_require__(29);
 let LessonsService = class LessonsService {
     constructor(model) {
         this.model = model;
@@ -1628,12 +1648,12 @@ let LessonsService = class LessonsService {
         const lesson = new this.model(data);
         return lesson.save();
     }
-    async findAll(page, limit) {
-        page = page - 1;
-        const count = await this.model.countDocuments();
-        const lessons = await this.model.find().sort({ createdAt: 1 }).limit(limit).skip(limit * page);
+    async findAll(query) {
+        const lessons = await paginate_1.paginateUtils(this.model, query);
         return {
-            total: count, limit, page: page + 1,
+            total: (lessons === null || lessons === void 0 ? void 0 : lessons.length) || 0,
+            limit: (query === null || query === void 0 ? void 0 : query.limit) || 20,
+            page: query.page || 1,
             result: lessons
         };
     }
@@ -1660,7 +1680,7 @@ exports.LessonsService = LessonsService;
 
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1721,7 +1741,7 @@ exports.LessonSchema = mongoose_1.SchemaFactory.createForClass(Lesson);
 
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1737,16 +1757,17 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LessonsController = void 0;
 const common_1 = __webpack_require__(4);
 const swagger_1 = __webpack_require__(2);
 const express_1 = __webpack_require__(17);
 const paginator_1 = __webpack_require__(22);
-const joi_validation_pipe_1 = __webpack_require__(30);
-const create_lesson_1 = __webpack_require__(39);
-const lessons_service_1 = __webpack_require__(36);
+const joi_validation_pipe_1 = __webpack_require__(31);
+const create_lesson_1 = __webpack_require__(40);
+const lessons_entity_1 = __webpack_require__(50);
+const lessons_service_1 = __webpack_require__(37);
 let LessonsController = class LessonsController {
     constructor(_ls) {
         this._ls = _ls;
@@ -1760,7 +1781,7 @@ let LessonsController = class LessonsController {
             .catch((e) => next(new common_1.InternalServerErrorException(e)));
     }
     findAll(query, params, res) {
-        this._ls.findAll(+(query === null || query === void 0 ? void 0 : query.page) || 1, +(query === null || query === void 0 ? void 0 : query.limit) || 10)
+        this._ls.findAll(query)
             .then(result => res.status(common_1.HttpStatus.OK).send(result))
             .catch(e => {
             throw new common_1.InternalServerErrorException(e.message);
@@ -1810,7 +1831,7 @@ __decorate([
     swagger_1.ApiQuery({ name: 'limit', type: Number, required: false }),
     __param(0, common_1.Query()), __param(1, common_1.Param()), __param(2, common_1.Res()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, typeof (_d = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _d : Object]),
+    __metadata("design:paramtypes", [typeof (_d = typeof lessons_entity_1.IQuerySearchLessons !== "undefined" && lessons_entity_1.IQuerySearchLessons) === "function" ? _d : Object, Object, typeof (_e = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _e : Object]),
     __metadata("design:returntype", void 0)
 ], LessonsController.prototype, "findAll", null);
 __decorate([
@@ -1820,7 +1841,7 @@ __decorate([
     __param(1, common_1.Res()),
     __param(2, common_1.Next()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_e = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _e : Object, typeof (_f = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _f : Object]),
+    __metadata("design:paramtypes", [String, typeof (_f = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _f : Object, typeof (_g = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _g : Object]),
     __metadata("design:returntype", void 0)
 ], LessonsController.prototype, "findOne", null);
 __decorate([
@@ -1831,7 +1852,7 @@ __decorate([
     __param(2, common_1.Body(new joi_validation_pipe_1.JoiValidationPipe(create_lesson_1.createLessonSchema))),
     __param(3, common_1.Next()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_g = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _g : Object, typeof (_h = typeof create_lesson_1.CreateLessonDto !== "undefined" && create_lesson_1.CreateLessonDto) === "function" ? _h : Object, typeof (_j = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _j : Object]),
+    __metadata("design:paramtypes", [String, typeof (_h = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _h : Object, typeof (_j = typeof create_lesson_1.CreateLessonDto !== "undefined" && create_lesson_1.CreateLessonDto) === "function" ? _j : Object, typeof (_k = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _k : Object]),
     __metadata("design:returntype", void 0)
 ], LessonsController.prototype, "update", null);
 __decorate([
@@ -1841,19 +1862,19 @@ __decorate([
     __param(1, common_1.Res()),
     __param(2, common_1.Next()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_k = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _k : Object, typeof (_l = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _l : Object]),
+    __metadata("design:paramtypes", [String, typeof (_l = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _l : Object, typeof (_m = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _m : Object]),
     __metadata("design:returntype", void 0)
 ], LessonsController.prototype, "remove", null);
 LessonsController = __decorate([
     common_1.Controller('lessons'),
     swagger_1.ApiTags('Lessons'),
-    __metadata("design:paramtypes", [typeof (_m = typeof lessons_service_1.LessonsService !== "undefined" && lessons_service_1.LessonsService) === "function" ? _m : Object])
+    __metadata("design:paramtypes", [typeof (_o = typeof lessons_service_1.LessonsService !== "undefined" && lessons_service_1.LessonsService) === "function" ? _o : Object])
 ], LessonsController);
 exports.LessonsController = LessonsController;
 
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1870,7 +1891,7 @@ var _a;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createLessonSchema = exports.CreateLessonDto = void 0;
 const swagger_1 = __webpack_require__(2);
-const Joi = __webpack_require__(31);
+const Joi = __webpack_require__(32);
 const course_entity_1 = __webpack_require__(28);
 class CreateLessonDto {
 }
@@ -1944,7 +1965,373 @@ exports.createLessonSchema = Joi.object({
 
 
 /***/ }),
-/* 40 */
+/* 41 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CertificatesModule = void 0;
+const common_1 = __webpack_require__(4);
+const certificates_service_1 = __webpack_require__(42);
+const certificates_controller_1 = __webpack_require__(47);
+const mongoose_1 = __webpack_require__(11);
+const certificate_schema_1 = __webpack_require__(43);
+let CertificatesModule = class CertificatesModule {
+};
+CertificatesModule = __decorate([
+    common_1.Module({
+        imports: [mongoose_1.MongooseModule.forFeature([{ name: certificate_schema_1.Certificate.name, schema: certificate_schema_1.CertificateSchema }])],
+        controllers: [certificates_controller_1.CertificatesController],
+        providers: [certificates_service_1.CertificatesService],
+    })
+], CertificatesModule);
+exports.CertificatesModule = CertificatesModule;
+
+
+/***/ }),
+/* 42 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var _a;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CertificatesService = void 0;
+const common_1 = __webpack_require__(4);
+const mongoose_1 = __webpack_require__(11);
+const mongoose_2 = __webpack_require__(13);
+const certificate_schema_1 = __webpack_require__(43);
+const telegram_bot_1 = __webpack_require__(45);
+const paginate_1 = __webpack_require__(29);
+let CertificatesService = class CertificatesService {
+    constructor(model) {
+        this.model = model;
+    }
+    create(data) {
+        return telegram_bot_1.bot.telegram.getFileLink(data.fileId).then(link => {
+            data.fileLink = link.toString();
+            return this.model.create(data);
+        });
+    }
+    async findAll(query) {
+        const filter = {
+            userId: query.userId ? new mongoose_2.Types.ObjectId(query.userId) : undefined,
+            courseId: query.courseId ? new mongoose_2.Types.ObjectId(query.courseId) : undefined
+        };
+        const lessons = await paginate_1.paginateUtils(this.model, query, filter);
+        return {
+            total: lessons === null || lessons === void 0 ? void 0 : lessons.length,
+            limit: query.limit || 20,
+            page: query.page || 1,
+            result: lessons
+        };
+    }
+    remove(id) {
+        return this.model.findByIdAndDelete(id).exec();
+    }
+    async refreshLink(id, fileId) {
+        const fileLink = await telegram_bot_1.bot.telegram.getFileLink(fileId);
+        return await this.model.findByIdAndUpdate(id, { $set: { fileLink: String(fileLink) } }, { new: true });
+    }
+};
+CertificatesService = __decorate([
+    common_1.Injectable(),
+    __param(0, mongoose_1.InjectModel(certificate_schema_1.Certificate.name)),
+    __metadata("design:paramtypes", [typeof (_a = typeof mongoose_2.Model !== "undefined" && mongoose_2.Model) === "function" ? _a : Object])
+], CertificatesService);
+exports.CertificatesService = CertificatesService;
+
+
+/***/ }),
+/* 43 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a, _b, _c, _d, _e, _f;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CertificateSchema = exports.Certificate = void 0;
+const mongoose_1 = __webpack_require__(11);
+const mongoose = __webpack_require__(13);
+const certificates_interface_1 = __webpack_require__(44);
+let Certificate = class Certificate {
+};
+__decorate([
+    mongoose_1.Prop(),
+    __metadata("design:type", typeof (_b = typeof mongoose !== "undefined" && (_a = mongoose.Types) !== void 0 && _a.ObjectId) === "function" ? _b : Object)
+], Certificate.prototype, "id", void 0);
+__decorate([
+    mongoose_1.Prop({ required: true, ref: 'users' }),
+    __metadata("design:type", typeof (_d = typeof mongoose !== "undefined" && (_c = mongoose.Types) !== void 0 && _c.ObjectId) === "function" ? _d : Object)
+], Certificate.prototype, "userId", void 0);
+__decorate([
+    mongoose_1.Prop({ required: true, ref: 'courses' }),
+    __metadata("design:type", typeof (_f = typeof mongoose !== "undefined" && (_e = mongoose.Types) !== void 0 && _e.ObjectId) === "function" ? _f : Object)
+], Certificate.prototype, "courseId", void 0);
+__decorate([
+    mongoose_1.Prop({
+        default: certificates_interface_1.EStudyProgress.NOT_STARTED,
+        enum: [certificates_interface_1.EStudyProgress.NOT_STARTED, certificates_interface_1.EStudyProgress.STARTED, certificates_interface_1.EStudyProgress.IN_PROGRESS, certificates_interface_1.EStudyProgress.COMPLETED]
+    }),
+    __metadata("design:type", Number)
+], Certificate.prototype, "progress", void 0);
+__decorate([
+    mongoose_1.Prop({ required: true }),
+    __metadata("design:type", String)
+], Certificate.prototype, "fileId", void 0);
+__decorate([
+    mongoose_1.Prop({ required: true }),
+    __metadata("design:type", String)
+], Certificate.prototype, "fileLink", void 0);
+__decorate([
+    mongoose_1.Prop({ default: Date.now() }),
+    __metadata("design:type", Number)
+], Certificate.prototype, "createdAt", void 0);
+__decorate([
+    mongoose_1.Prop({ default: Date.now() }),
+    __metadata("design:type", Number)
+], Certificate.prototype, "updatedAt", void 0);
+Certificate = __decorate([
+    mongoose_1.Schema({ versionKey: false })
+], Certificate);
+exports.Certificate = Certificate;
+exports.CertificateSchema = mongoose_1.SchemaFactory.createForClass(Certificate);
+
+
+/***/ }),
+/* 44 */
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.EStudyProgress = void 0;
+var EStudyProgress;
+(function (EStudyProgress) {
+    EStudyProgress[EStudyProgress["NOT_STARTED"] = 0] = "NOT_STARTED";
+    EStudyProgress[EStudyProgress["STARTED"] = 1] = "STARTED";
+    EStudyProgress[EStudyProgress["IN_PROGRESS"] = 2] = "IN_PROGRESS";
+    EStudyProgress[EStudyProgress["COMPLETED"] = 3] = "COMPLETED";
+})(EStudyProgress = exports.EStudyProgress || (exports.EStudyProgress = {}));
+
+
+/***/ }),
+/* 45 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bot = void 0;
+const telegraf_1 = __webpack_require__(46);
+exports.bot = new telegraf_1.Telegraf(process.env.BOT_TOKEN);
+
+
+/***/ }),
+/* 46 */
+/***/ ((module) => {
+
+module.exports = require("telegraf");;
+
+/***/ }),
+/* 47 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CertificatesController = void 0;
+const common_1 = __webpack_require__(4);
+const swagger_1 = __webpack_require__(2);
+const express_1 = __webpack_require__(17);
+const paginator_1 = __webpack_require__(22);
+const joi_validation_pipe_1 = __webpack_require__(31);
+const certificates_service_1 = __webpack_require__(42);
+const certificate_dto_1 = __webpack_require__(48);
+let CertificatesController = class CertificatesController {
+    constructor(_cs) {
+        this._cs = _cs;
+    }
+    create(res, data, next) {
+        this._cs.create(data)
+            .then(certificate => res.status(common_1.HttpStatus.CREATED).send(certificate))
+            .catch(e => next(new common_1.InternalServerErrorException(e)));
+    }
+    findAll(query, params, res) {
+        this._cs.findAll(Object.assign(Object.assign({}, query), { limit: +query.limit || 20, page: +query.page || 1 }))
+            .then(result => res.status(common_1.HttpStatus.OK).send(result))
+            .catch(e => { throw new common_1.InternalServerErrorException(e.message); });
+    }
+    remove(id, res, next) {
+        this._cs.remove(id)
+            .then(() => res.status(common_1.HttpStatus.NO_CONTENT).send(null))
+            .catch((e) => next(new common_1.InternalServerErrorException(e.message)));
+    }
+    refresh(id, res, updateCourseDto, next) {
+        this._cs.refreshLink(id, updateCourseDto.fileId)
+            .then((course) => {
+            if (course) {
+                res.status(common_1.HttpStatus.OK).send(course);
+            }
+            else {
+                throw new common_1.NotFoundException({ result: 'Certificate was not found!' });
+            }
+        })
+            .catch((e) => next(new common_1.InternalServerErrorException(e.message)));
+    }
+};
+__decorate([
+    common_1.Post(),
+    swagger_1.ApiCreatedResponse({ type: certificate_dto_1.CertificateDto }),
+    common_1.UsePipes(new joi_validation_pipe_1.JoiValidationPipe(certificate_dto_1.createCertificateSchema)),
+    __param(0, common_1.Res()), __param(1, common_1.Body()), __param(2, common_1.Next()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [typeof (_a = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _a : Object, typeof (_b = typeof certificate_dto_1.CertificateDto !== "undefined" && certificate_dto_1.CertificateDto) === "function" ? _b : Object, typeof (_c = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _c : Object]),
+    __metadata("design:returntype", void 0)
+], CertificatesController.prototype, "create", null);
+__decorate([
+    common_1.Get(),
+    paginator_1.ApiPaginatedResponse(certificate_dto_1.CertificateDto),
+    swagger_1.ApiQuery({ name: 'page', type: Number, required: false, example: 1 }),
+    swagger_1.ApiQuery({ name: 'limit', type: Number, required: false, example: 20 }),
+    swagger_1.ApiQuery({ name: 'userId', type: String, required: false }),
+    swagger_1.ApiQuery({ name: 'courseId', type: String, required: false }),
+    __param(0, common_1.Query()), __param(1, common_1.Param()), __param(2, common_1.Res()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object, typeof (_d = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _d : Object]),
+    __metadata("design:returntype", void 0)
+], CertificatesController.prototype, "findAll", null);
+__decorate([
+    common_1.Delete(':id'),
+    swagger_1.ApiNoContentResponse(),
+    __param(0, common_1.Param('id')), __param(1, common_1.Res()), __param(2, common_1.Next()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, typeof (_e = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _e : Object, typeof (_f = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _f : Object]),
+    __metadata("design:returntype", void 0)
+], CertificatesController.prototype, "remove", null);
+__decorate([
+    common_1.Put(':id'),
+    swagger_1.ApiOkResponse({ type: certificate_dto_1.CertificateDto }),
+    __param(0, common_1.Param('id')),
+    __param(1, common_1.Res()),
+    __param(2, common_1.Body()),
+    __param(3, common_1.Next()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, typeof (_g = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _g : Object, typeof (_h = typeof certificate_dto_1.CertificateDto !== "undefined" && certificate_dto_1.CertificateDto) === "function" ? _h : Object, typeof (_j = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _j : Object]),
+    __metadata("design:returntype", void 0)
+], CertificatesController.prototype, "refresh", null);
+CertificatesController = __decorate([
+    swagger_1.ApiTags('Certificate'),
+    common_1.Controller('certificates'),
+    __metadata("design:paramtypes", [typeof (_k = typeof certificates_service_1.CertificatesService !== "undefined" && certificates_service_1.CertificatesService) === "function" ? _k : Object])
+], CertificatesController);
+exports.CertificatesController = CertificatesController;
+
+
+/***/ }),
+/* 48 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var _a, _b;
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.createCertificateSchema = exports.CertificateDto = void 0;
+const swagger_1 = __webpack_require__(2);
+const Joi = __webpack_require__(32);
+const certificates_interface_1 = __webpack_require__(44);
+class CertificateDto {
+}
+__decorate([
+    swagger_1.ApiProperty({ required: false, readOnly: true, type: String }),
+    __metadata("design:type", String)
+], CertificateDto.prototype, "id", void 0);
+__decorate([
+    swagger_1.ApiProperty({ required: true, type: String }),
+    __metadata("design:type", String)
+], CertificateDto.prototype, "userId", void 0);
+__decorate([
+    swagger_1.ApiProperty({ required: true, type: String }),
+    __metadata("design:type", String)
+], CertificateDto.prototype, "courseId", void 0);
+__decorate([
+    swagger_1.ApiProperty({
+        required: true, type: Number, enum: certificates_interface_1.EStudyProgress,
+        default: certificates_interface_1.EStudyProgress.NOT_STARTED
+    }),
+    __metadata("design:type", typeof (_a = typeof certificates_interface_1.EStudyProgress !== "undefined" && certificates_interface_1.EStudyProgress) === "function" ? _a : Object)
+], CertificateDto.prototype, "progress", void 0);
+__decorate([
+    swagger_1.ApiProperty({ required: true, type: String }),
+    __metadata("design:type", String)
+], CertificateDto.prototype, "fileId", void 0);
+__decorate([
+    swagger_1.ApiProperty({ required: true, type: String }),
+    __metadata("design:type", Object)
+], CertificateDto.prototype, "fileLink", void 0);
+__decorate([
+    swagger_1.ApiProperty({ type: Number, required: false, readOnly: true, default: Date.now() }),
+    __metadata("design:type", Number)
+], CertificateDto.prototype, "createdAt", void 0);
+__decorate([
+    swagger_1.ApiProperty({ type: Number, required: false, readOnly: true, default: Date.now() }),
+    __metadata("design:type", Number)
+], CertificateDto.prototype, "updatedAt", void 0);
+exports.CertificateDto = CertificateDto;
+exports.createCertificateSchema = Joi.object({
+    userId: Joi.string().required(),
+    courseId: Joi.string().required(),
+    progress: Joi.valid(certificates_interface_1.EStudyProgress.NOT_STARTED, certificates_interface_1.EStudyProgress.STARTED, certificates_interface_1.EStudyProgress.COMPLETED, certificates_interface_1.EStudyProgress.IN_PROGRESS),
+    fileId: Joi.string().allow(null, "").optional(),
+    fileLink: Joi.string().allow(null, "").optional(),
+});
+
+
+/***/ }),
+/* 49 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1971,6 +2358,14 @@ AllExceptionsFilter = __decorate([
     common_1.Catch()
 ], AllExceptionsFilter);
 exports.AllExceptionsFilter = AllExceptionsFilter;
+
+
+/***/ }),
+/* 50 */
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 
 /***/ })

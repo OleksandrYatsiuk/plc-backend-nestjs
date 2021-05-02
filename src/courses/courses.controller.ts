@@ -16,7 +16,7 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 @ApiTags('Courses')
 @Controller('courses')
 export class CoursesController {
-  constructor(private readonly coursesService: CoursesService) { }
+  constructor(private readonly _cs: CoursesService) { }
 
   @Post()
   @ApiCreatedResponse({ type: CreateCourseDto })
@@ -26,7 +26,7 @@ export class CoursesController {
     @Body() createCourseDto: CreateCourseDto,
     @Next() next: NextFunction,
   ): void {
-    this.coursesService
+    this._cs
       .create(createCourseDto)
       .then((course) => {
         res.status(HttpStatus.CREATED).send(course);
@@ -39,7 +39,7 @@ export class CoursesController {
   @ApiQuery({ name: 'page', type: Number, required: false })
   @ApiQuery({ name: 'limit', type: Number, required: false })
   findAll(@Query() query, @Param() params, @Res() res: Response): void {
-    this.coursesService.findAll(+query?.page || 1, +query?.limit || 10)
+    this._cs.findAll(query)
       .then(result => res.status(HttpStatus.OK).send(result))
       .catch(e => {
         throw new InternalServerErrorException(e.message);
@@ -53,7 +53,7 @@ export class CoursesController {
     @Res() res: Response,
     @Next() next: NextFunction,
   ): void {
-    this.coursesService
+    this._cs
       .findOne(id)
       .then((course) => res.status(HttpStatus.OK).send(course))
       .catch((e) => next(new InternalServerErrorException(e)));
@@ -68,7 +68,7 @@ export class CoursesController {
     updateCourseDto: UpdateCourseDto,
     @Next() next: NextFunction,
   ): void {
-    this.coursesService
+    this._cs
       .update(id, updateCourseDto)
       .then((course) => {
         if (course) {
@@ -87,7 +87,7 @@ export class CoursesController {
     @Res() res: Response,
     @Next() next: NextFunction,
   ): void {
-    this.coursesService
+    this._cs
       .remove(id)
       .then(() => res.status(HttpStatus.NO_CONTENT).send(null))
       .catch((e) => next(new InternalServerErrorException(e.message)));

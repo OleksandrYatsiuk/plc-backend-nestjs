@@ -1,11 +1,13 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { Course } from './entities/course.entity';
+import { Course, IQuerySearchCourses } from './entities/course.entity';
 import { Model } from 'mongoose';
 import { CourseDocument } from 'src/schemas/course.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginatedDto } from 'src/models/pagination.interface';
+import { paginateUtils } from 'src/utils/paginate';
+
 
 
 @Injectable()
@@ -17,13 +19,16 @@ export class CoursesService {
     const course = new this.model(createCourseDto);
     return course.save();
   }
-  async findAll(page: number, limit: number): Promise<PaginatedDto<CourseDocument[]>> {
-    page = page - 1;
-    const count = await this.model.countDocuments();
-    const lessons = await this.model.find().sort({ createdAt: 1 }).limit(limit).skip(limit * page);
+
+
+  async findAll(query: IQuerySearchCourses): Promise<PaginatedDto<CourseDocument[]>> {
+
+    const courses = await paginateUtils(this.model, query);
     return {
-      total: count, limit, page: page + 1,
-      result: lessons
+      total: courses?.length || 0,
+      page: query.page | 1,
+      limit: query.limit || 20,
+      result: courses
     };
   }
 
