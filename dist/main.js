@@ -9,7 +9,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __webpack_require__(1);
 const swagger_1 = __webpack_require__(2);
 const app_module_1 = __webpack_require__(3);
-const all_exceptions_1 = __webpack_require__(49);
+const all_exceptions_1 = __webpack_require__(50);
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule, {
         cors: {
@@ -65,7 +65,7 @@ const users_module_1 = __webpack_require__(9);
 const mongoose_config_service_1 = __webpack_require__(25);
 const courses_module_1 = __webpack_require__(26);
 const lessons_module_1 = __webpack_require__(36);
-const certificates_module_1 = __webpack_require__(41);
+const certificates_module_1 = __webpack_require__(42);
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -1244,8 +1244,8 @@ exports.paginateUtils = void 0;
 function paginateUtils(model, query, filter = {}) {
     const limit = Number(query.limit || 20);
     const page = Number(query.page - 1 || 0);
-    Object.keys(filter).forEach(key => filter[key] === undefined && delete filter[key]);
-    return model.find().sort({ createdAt: 1 }).limit(limit).skip(limit * page);
+    Object.keys(filter).forEach(key => (filter[key] === undefined || filter[key] === null) && delete filter[key]);
+    return model.find(filter).sort({ createdAt: 1 }).limit(limit).skip(limit * page);
 }
 exports.paginateUtils = paginateUtils;
 
@@ -1766,7 +1766,7 @@ const express_1 = __webpack_require__(17);
 const paginator_1 = __webpack_require__(22);
 const joi_validation_pipe_1 = __webpack_require__(31);
 const create_lesson_1 = __webpack_require__(40);
-const lessons_entity_1 = __webpack_require__(50);
+const lessons_entity_1 = __webpack_require__(41);
 const lessons_service_1 = __webpack_require__(37);
 let LessonsController = class LessonsController {
     constructor(_ls) {
@@ -1966,6 +1966,14 @@ exports.createLessonSchema = Joi.object({
 
 /***/ }),
 /* 41 */
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+
+/***/ }),
+/* 42 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -1978,10 +1986,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CertificatesModule = void 0;
 const common_1 = __webpack_require__(4);
-const certificates_service_1 = __webpack_require__(42);
-const certificates_controller_1 = __webpack_require__(47);
+const certificates_service_1 = __webpack_require__(43);
+const certificates_controller_1 = __webpack_require__(48);
 const mongoose_1 = __webpack_require__(11);
-const certificate_schema_1 = __webpack_require__(43);
+const certificate_schema_1 = __webpack_require__(44);
 let CertificatesModule = class CertificatesModule {
 };
 CertificatesModule = __decorate([
@@ -1995,7 +2003,7 @@ exports.CertificatesModule = CertificatesModule;
 
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -2017,8 +2025,8 @@ exports.CertificatesService = void 0;
 const common_1 = __webpack_require__(4);
 const mongoose_1 = __webpack_require__(11);
 const mongoose_2 = __webpack_require__(13);
-const certificate_schema_1 = __webpack_require__(43);
-const telegram_bot_1 = __webpack_require__(45);
+const certificate_schema_1 = __webpack_require__(44);
+const telegram_bot_1 = __webpack_require__(46);
 const paginate_1 = __webpack_require__(29);
 let CertificatesService = class CertificatesService {
     constructor(model) {
@@ -2032,8 +2040,8 @@ let CertificatesService = class CertificatesService {
     }
     async findAll(query) {
         const filter = {
-            userId: query.userId ? new mongoose_2.Types.ObjectId(query.userId) : undefined,
-            courseId: query.courseId ? new mongoose_2.Types.ObjectId(query.courseId) : undefined
+            userId: query.userId && this.isValidTypeObjectId(query.userId) ? new mongoose_2.Types.ObjectId(query.userId) : null,
+            courseId: query.courseId && this.isValidTypeObjectId(query.courseId) ? new mongoose_2.Types.ObjectId(query.courseId) : null
         };
         const lessons = await paginate_1.paginateUtils(this.model, query, filter);
         return {
@@ -2050,6 +2058,16 @@ let CertificatesService = class CertificatesService {
         const fileLink = await telegram_bot_1.bot.telegram.getFileLink(fileId);
         return await this.model.findByIdAndUpdate(id, { $set: { fileLink: String(fileLink) } }, { new: true });
     }
+    isValidTypeObjectId(value) {
+        try {
+            new mongoose_2.Types.ObjectId(value);
+        }
+        catch (error) {
+            console.log('error');
+            return false;
+        }
+        return true;
+    }
 };
 CertificatesService = __decorate([
     common_1.Injectable(),
@@ -2060,7 +2078,7 @@ exports.CertificatesService = CertificatesService;
 
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -2078,7 +2096,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CertificateSchema = exports.Certificate = void 0;
 const mongoose_1 = __webpack_require__(11);
 const mongoose = __webpack_require__(13);
-const certificates_interface_1 = __webpack_require__(44);
+const certificates_interface_1 = __webpack_require__(45);
 let Certificate = class Certificate {
 };
 __decorate([
@@ -2124,7 +2142,7 @@ exports.CertificateSchema = mongoose_1.SchemaFactory.createForClass(Certificate)
 
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -2140,24 +2158,24 @@ var EStudyProgress;
 
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.bot = void 0;
-const telegraf_1 = __webpack_require__(46);
+const telegraf_1 = __webpack_require__(47);
 exports.bot = new telegraf_1.Telegraf(process.env.BOT_TOKEN);
 
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ ((module) => {
 
 module.exports = require("telegraf");;
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -2181,8 +2199,8 @@ const swagger_1 = __webpack_require__(2);
 const express_1 = __webpack_require__(17);
 const paginator_1 = __webpack_require__(22);
 const joi_validation_pipe_1 = __webpack_require__(31);
-const certificates_service_1 = __webpack_require__(42);
-const certificate_dto_1 = __webpack_require__(48);
+const certificates_service_1 = __webpack_require__(43);
+const certificate_dto_1 = __webpack_require__(49);
 let CertificatesController = class CertificatesController {
     constructor(_cs) {
         this._cs = _cs;
@@ -2264,7 +2282,7 @@ exports.CertificatesController = CertificatesController;
 
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -2282,7 +2300,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createCertificateSchema = exports.CertificateDto = void 0;
 const swagger_1 = __webpack_require__(2);
 const Joi = __webpack_require__(32);
-const certificates_interface_1 = __webpack_require__(44);
+const certificates_interface_1 = __webpack_require__(45);
 class CertificateDto {
 }
 __decorate([
@@ -2331,7 +2349,7 @@ exports.createCertificateSchema = Joi.object({
 
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
@@ -2358,14 +2376,6 @@ AllExceptionsFilter = __decorate([
     common_1.Catch()
 ], AllExceptionsFilter);
 exports.AllExceptionsFilter = AllExceptionsFilter;
-
-
-/***/ }),
-/* 50 */
-/***/ ((__unused_webpack_module, exports) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 
 /***/ })
