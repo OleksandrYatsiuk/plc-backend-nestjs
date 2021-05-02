@@ -1181,8 +1181,14 @@ let CoursesService = class CoursesService {
         const course = new this.model(createCourseDto);
         return course.save();
     }
-    findAll() {
-        return this.model.find().sort('createdAt').exec();
+    async findAll(page, limit) {
+        page = page - 1;
+        const count = await this.model.countDocuments();
+        const lessons = await this.model.find().sort({ createdAt: 1 }).limit(limit).skip(limit * page);
+        return {
+            total: count, limit, page: page + 1,
+            result: lessons
+        };
     }
     findOne(id) {
         return this.model.findById(id).exec()
@@ -1242,7 +1248,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CoursesController = void 0;
 const common_1 = __webpack_require__(4);
@@ -1265,8 +1271,12 @@ let CoursesController = class CoursesController {
         })
             .catch((e) => next(new common_1.InternalServerErrorException(e)));
     }
-    findAll() {
-        return this.coursesService.findAll();
+    findAll(query, params, res) {
+        this.coursesService.findAll(+(query === null || query === void 0 ? void 0 : query.page) || 1, +(query === null || query === void 0 ? void 0 : query.limit) || 10)
+            .then(result => res.status(common_1.HttpStatus.OK).send(result))
+            .catch(e => {
+            throw new common_1.InternalServerErrorException(e.message);
+        });
     }
     findOne(id, res, next) {
         this.coursesService
@@ -1308,8 +1318,11 @@ __decorate([
 __decorate([
     common_1.Get(),
     paginator_1.ApiPaginatedResponse(create_course_dto_1.CreateCourseDto),
+    swagger_1.ApiQuery({ name: 'page', type: Number, required: false }),
+    swagger_1.ApiQuery({ name: 'limit', type: Number, required: false }),
+    __param(0, common_1.Query()), __param(1, common_1.Param()), __param(2, common_1.Res()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object, Object, typeof (_d = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _d : Object]),
     __metadata("design:returntype", void 0)
 ], CoursesController.prototype, "findAll", null);
 __decorate([
@@ -1319,7 +1332,7 @@ __decorate([
     __param(1, common_1.Res()),
     __param(2, common_1.Next()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_d = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _d : Object, typeof (_e = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _e : Object]),
+    __metadata("design:paramtypes", [String, typeof (_e = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _e : Object, typeof (_f = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _f : Object]),
     __metadata("design:returntype", void 0)
 ], CoursesController.prototype, "findOne", null);
 __decorate([
@@ -1330,7 +1343,7 @@ __decorate([
     __param(2, common_1.Body(new joi_validation_pipe_1.JoiValidationPipe(create_course_dto_1.createCourseSchema))),
     __param(3, common_1.Next()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_f = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _f : Object, typeof (_g = typeof update_course_dto_1.UpdateCourseDto !== "undefined" && update_course_dto_1.UpdateCourseDto) === "function" ? _g : Object, typeof (_h = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _h : Object]),
+    __metadata("design:paramtypes", [String, typeof (_g = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _g : Object, typeof (_h = typeof update_course_dto_1.UpdateCourseDto !== "undefined" && update_course_dto_1.UpdateCourseDto) === "function" ? _h : Object, typeof (_j = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _j : Object]),
     __metadata("design:returntype", void 0)
 ], CoursesController.prototype, "update", null);
 __decorate([
@@ -1340,13 +1353,13 @@ __decorate([
     __param(1, common_1.Res()),
     __param(2, common_1.Next()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, typeof (_j = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _j : Object, typeof (_k = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _k : Object]),
+    __metadata("design:paramtypes", [String, typeof (_k = typeof express_1.Response !== "undefined" && express_1.Response) === "function" ? _k : Object, typeof (_l = typeof express_1.NextFunction !== "undefined" && express_1.NextFunction) === "function" ? _l : Object]),
     __metadata("design:returntype", void 0)
 ], CoursesController.prototype, "remove", null);
 CoursesController = __decorate([
     swagger_1.ApiTags('Courses'),
     common_1.Controller('courses'),
-    __metadata("design:paramtypes", [typeof (_l = typeof courses_service_1.CoursesService !== "undefined" && courses_service_1.CoursesService) === "function" ? _l : Object])
+    __metadata("design:paramtypes", [typeof (_m = typeof courses_service_1.CoursesService !== "undefined" && courses_service_1.CoursesService) === "function" ? _m : Object])
 ], CoursesController);
 exports.CoursesController = CoursesController;
 
@@ -1618,7 +1631,7 @@ let LessonsService = class LessonsService {
     async findAll(page, limit) {
         page = page - 1;
         const count = await this.model.countDocuments();
-        const lessons = await this.model.find().sort({ updatedAt: 1 }).limit(limit).skip(limit * page);
+        const lessons = await this.model.find().sort({ createdAt: 1 }).limit(limit).skip(limit * page);
         return {
             total: count, limit, page: page + 1,
             result: lessons
@@ -1762,9 +1775,9 @@ let LessonsController = class LessonsController {
     update(id, res, data, next) {
         this._ls
             .update(id, data)
-            .then((course) => {
-            if (course) {
-                res.status(common_1.HttpStatus.OK).send(course);
+            .then((lesson) => {
+            if (lesson) {
+                res.status(common_1.HttpStatus.OK).send(lesson);
             }
             else {
                 throw new common_1.NotFoundException({ result: 'Lesson was not found!' });
@@ -1924,6 +1937,7 @@ exports.CreateLessonDto = CreateLessonDto;
 exports.createLessonSchema = Joi.object({
     name: Joi.string().required(),
     context: Joi.string().allow(null, "").optional(),
+    courseId: Joi.string().allow(null, "").optional(),
     free: Joi.boolean(),
     status: Joi.valid(course_entity_1.ECourseStatus.DRAFT, course_entity_1.ECourseStatus.PUBLISHED)
 });

@@ -1912,8 +1912,8 @@
         "affectsGlobalScope": false
       },
       "../src/courses/courses.service.ts": {
-        "version": "db53ff27a160a7e532e12df58c178d233f4c5daeada4a9365af0b127f86c237b",
-        "signature": "73025bdc3fe9679b576d90a87ddf6318c92dad967d846d7d3d89461bb2679d28",
+        "version": "a4671b167abc25acf3cc4cc94e808d7801f91a7f30a9aacddae13af7edf06193",
+        "signature": "36dd9fb12f63c403b85fd9efeb81a4674a26f840edd4f27d40555671fe7a4e2b",
         "affectsGlobalScope": false
       },
       "../src/pipes/joi-validation.pipe.ts": {
@@ -1922,8 +1922,8 @@
         "affectsGlobalScope": false
       },
       "../src/courses/courses.controller.ts": {
-        "version": "ff48ea2c6105d4ccfad9a49fcb8210d33ae1f10c2e590bd25342e4d382da7023",
-        "signature": "ee8749dd3cf66b3bac301d62590e7aab1e923483f1154a824af2939b9a7eb23c",
+        "version": "21097a11c81c717f90cae4cdacdef14e0fc3b638f2aa971785122c29022578d0",
+        "signature": "735ce569891e26c26850943a3df4a7f1a95c6d1285cc8775c2d98aafc78553e0",
         "affectsGlobalScope": false
       },
       "../src/courses/courses.module.ts": {
@@ -1937,17 +1937,17 @@
         "affectsGlobalScope": false
       },
       "../src/lessons/dto/create-lesson.ts": {
-        "version": "232487cf0876d9fe3c9e5dfbcc45188bea27c5b3c0d34d0b4f7e68a57b0d74e1",
+        "version": "c848122effbc3dd49daaf1f9196936256b736301f75474f955d96169f93c1423",
         "signature": "aa7e9b1d19bb16604082cda4f0c02f8b64b326b122053942d925194dd71e8f55",
         "affectsGlobalScope": false
       },
       "../src/lessons/lessons.service.ts": {
-        "version": "2b57e9033b6c25034cf53df868ec64bd1ef6535cba5725a63124ae216733dfdd",
+        "version": "b1f561847ded3c3df6db646dabaa547348c2eb7809fade9b2ae64d2a3d79bd88",
         "signature": "8f2e5c40e176cf3aa2dd89e48763ceaa225891e14f4d3fa35be8328a66183cc7",
         "affectsGlobalScope": false
       },
       "../src/lessons/lessons.controller.ts": {
-        "version": "3a8dc97826501c8ce155f80131a8214a9fd2e27652aa33f8299d1ccd0dba7e2a",
+        "version": "441144cc5315c4688998c559b54afe89d45e876a50a6d089a7260b30a5afcefc",
         "signature": "99b19dba296cbf5e4b032694bc293b75b224867c32eb00376474d152ce5d03d5",
         "affectsGlobalScope": false
       },
@@ -3999,6 +3999,7 @@
         "../src/courses/dto/create-course.dto.ts",
         "../src/courses/dto/update-course.dto.ts",
         "../src/courses/entities/course.entity.ts",
+        "../src/models/pagination.interface.ts",
         "../src/schemas/course.schema.ts"
       ],
       "../src/courses/dto/create-course.dto.ts": [
@@ -5635,14 +5636,14 @@
         "../node_modules/@types/express/index.d.ts",
         "../src/courses/courses.service.ts",
         "../src/courses/dto/create-course.dto.ts",
-        "../src/courses/dto/update-course.dto.ts",
-        "../src/schemas/course.schema.ts"
+        "../src/courses/dto/update-course.dto.ts"
       ],
       "../src/courses/courses.service.ts": [
         "../node_modules/@nestjs/common/index.d.ts",
         "../node_modules/mongoose/index.d.ts",
         "../src/courses/dto/create-course.dto.ts",
         "../src/courses/dto/update-course.dto.ts",
+        "../src/models/pagination.interface.ts",
         "../src/schemas/course.schema.ts"
       ],
       "../src/courses/dto/create-course.dto.ts": [
@@ -6207,6 +6208,10 @@
     "affectedFilesPendingEmit": [
       [
         "../src/app.module.ts",
+        0
+      ],
+      [
+        "../src/courses/courses.module.ts",
         0
       ],
       [

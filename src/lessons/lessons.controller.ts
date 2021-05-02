@@ -65,9 +65,9 @@ export class LessonsController {
     ): void {
         this._ls
             .update(id, data)
-            .then((course) => {
-                if (course) {
-                    res.status(HttpStatus.OK).send(course);
+            .then((lesson) => {
+                if (lesson) {
+                    res.status(HttpStatus.OK).send(lesson);
                 } else {
                     throw new NotFoundException({ result: 'Lesson was not found!' });
                 }

@@ -58,6 +58,7 @@ export class CreateLessonDto {
 export const createLessonSchema = Joi.object({
     name: Joi.string().required(),
     context: Joi.string().allow(null, "").optional(),
+    courseId: Joi.string().allow(null, "").optional(),
     free: Joi.boolean(),
     status: Joi.valid(ECourseStatus.DRAFT, ECourseStatus.PUBLISHED)
 });

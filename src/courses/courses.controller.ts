@@ -1,10 +1,10 @@
 import {
   Controller, Get, Post, Body, Put, Param,
   Delete, Next, InternalServerErrorException,
-  Res, HttpStatus, UsePipes, NotFoundException
+  Res, HttpStatus, UsePipes, NotFoundException, Query
 } from '@nestjs/common';
 import {
-  ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags,
+  ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiQuery, ApiTags,
 } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { ApiPaginatedResponse } from 'src/decorators/paginator';
@@ -36,8 +36,14 @@ export class CoursesController {
 
   @Get()
   @ApiPaginatedResponse(CreateCourseDto)
-  findAll() {
-    return this.coursesService.findAll();
+  @ApiQuery({ name: 'page', type: Number, required: false })
+  @ApiQuery({ name: 'limit', type: Number, required: false })
+  findAll(@Query() query, @Param() params, @Res() res: Response): void {
+    this.coursesService.findAll(+query?.page || 1, +query?.limit || 10)
+      .then(result => res.status(HttpStatus.OK).send(result))
+      .catch(e => {
+        throw new InternalServerErrorException(e.message);
+      })
   }
 
   @Get(':id')

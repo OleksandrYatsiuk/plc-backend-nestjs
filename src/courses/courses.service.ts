@@ -5,6 +5,7 @@ import { Course } from './entities/course.entity';
 import { Model } from 'mongoose';
 import { CourseDocument } from 'src/schemas/course.schema';
 import { InjectModel } from '@nestjs/mongoose';
+import { PaginatedDto } from 'src/models/pagination.interface';
 
 
 @Injectable()
@@ -16,9 +17,14 @@ export class CoursesService {
     const course = new this.model(createCourseDto);
     return course.save();
   }
-
-  findAll(): Promise<CourseDocument[]> {
-    return this.model.find().sort('createdAt').exec();
+  async findAll(page: number, limit: number): Promise<PaginatedDto<CourseDocument[]>> {
+    page = page - 1;
+    const count = await this.model.countDocuments();
+    const lessons = await this.model.find().sort({ createdAt: 1 }).limit(limit).skip(limit * page);
+    return {
+      total: count, limit, page: page + 1,
+      result: lessons
+    };
   }
 
   findOne(id: string): Promise<CourseDocument | NotFoundException> {
