@@ -25,7 +25,7 @@ export class UsersService {
   }
 
   async loginAdmin(data: RegisterDto): Promise<UserDocument> {
-    const user = await this.db.findOne({ username: data.username });
+    const user = await this.db.findOne({ phone: data.phone });
     if (user && bcrypt.compareSync(data.password, user.passwordHash)) {
       return this.db.findByIdAndUpdate(user._id,
         { $set: { accessToken: bcrypt.hashSync(data.password, 10) } },

@@ -1767,8 +1767,8 @@
         "affectsGlobalScope": false
       },
       "../src/users/dto/register.dto.ts": {
-        "version": "8b41dcb0cf94142404293a019f19ac2b68901b51579e557e47971e35982bde07",
-        "signature": "2a7d5d3d18524c93b7518d29a53e47990afac7e0746d7b56a4eb2b7f6507c0a5",
+        "version": "a1ae48911a2e166b2bf91530eb2af0e3b98bbb9874fec60fd67feb4ba909fcb6",
+        "signature": "998167e41455817be5bf10f46f10d855fcc6d9625a62424d57e16aafdfde50a9",
         "affectsGlobalScope": false
       },
       "../node_modules/@nestjs/mapped-types/dist/mapped-type.interface.d.ts": {
@@ -1817,7 +1817,7 @@
         "affectsGlobalScope": false
       },
       "../src/users/users.service.ts": {
-        "version": "70b9b517608c34a4e970fe86363fde60920c053f4d0c43ea47011225176b3440",
+        "version": "487459db2e86f7e0337c21bf657d8ebee6e03156b56c1c76babd9387fe9a556b",
         "signature": "8961dc0af5fdbc18833a68ad60095e21043273df2b7f268b62e661643529ca77",
         "affectsGlobalScope": false
       },

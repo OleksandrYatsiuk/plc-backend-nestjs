@@ -15,4 +15,11 @@ export class RegisterDto {
         type: String
     })
     password?: string;
+
+    @ApiProperty({
+        default: '380985268458',
+        required: false,
+        type: String
+    })
+    phone?: string;
 }

@@ -238,7 +238,7 @@ let UsersService = class UsersService {
         return user.save();
     }
     async loginAdmin(data) {
-        const user = await this.db.findOne({ username: data.username });
+        const user = await this.db.findOne({ phone: data.phone });
         if (user && bcrypt.compareSync(data.password, user.passwordHash)) {
             return this.db.findByIdAndUpdate(user._id, { $set: { accessToken: bcrypt.hashSync(data.password, 10) } }, { new: true });
         }
@@ -1050,6 +1050,14 @@ __decorate([
     }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "password", void 0);
+__decorate([
+    swagger_1.ApiProperty({
+        default: '380985268458',
+        required: false,
+        type: String
+    }),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "phone", void 0);
 exports.RegisterDto = RegisterDto;
 
 
