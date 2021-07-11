@@ -8,6 +8,8 @@ import { MongooseConfigService } from './mongoose-config.service';
 import { CoursesModule } from './courses/courses.module';
 import { LessonsModule } from './lessons/lessons.module';
 import { CertificatesModule } from './certificates/certificates.module';
+import { PagesService } from './pages/pages.service';
+import { PagesModule } from './pages/pages.module';
 
 @Module({
   imports: [
@@ -17,6 +19,7 @@ import { CertificatesModule } from './certificates/certificates.module';
     LessonsModule,
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({ useClass: MongooseConfigService }),
+    PagesModule,
   ],
   controllers: [AppController],
   providers: [AppService, MongooseConfigService],
