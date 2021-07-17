@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
 import * as Joi from '@hapi/joi';
-import { ECourseStatus } from "src/courses/entities/course.entity";
 
 export class EditPageDto {
     @ApiProperty({
@@ -8,7 +7,7 @@ export class EditPageDto {
         readOnly: true,
         type: String,
     })
-    readonly id: string;
+    readonly _id: string;
 
     @ApiProperty({
         required: true,
@@ -23,6 +22,20 @@ export class EditPageDto {
         default: null
     })
     content: string;
+
+    @ApiProperty({
+        required: true,
+        type: String,
+        default: null
+    })
+    name: string;
+
+    @ApiProperty({
+        required: false,
+        type: String,
+        default: null
+    })
+    path: string;
 
     @ApiProperty({
         type: Number,
@@ -43,7 +56,4 @@ export class EditPageDto {
 export const editPageSchema = Joi.object({
     name: Joi.string().required(),
     context: Joi.string().allow(null, "").optional(),
-    courseId: Joi.string().allow(null, "").optional(),
-    free: Joi.boolean(),
-    status: Joi.valid(ECourseStatus.DRAFT, ECourseStatus.PUBLISHED)
 });

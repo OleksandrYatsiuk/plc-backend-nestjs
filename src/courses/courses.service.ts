@@ -26,8 +26,8 @@ export class CoursesService {
     const courses = await paginateUtils(this.model, query);
     return {
       total: courses?.length || 0,
-      page: query.page | 1,
-      limit: query.limit || 20,
+      page: Number(query.page) | 1,
+      limit: Number(query.limit) || 20,
       result: courses
     };
   }

@@ -24,8 +24,8 @@ export class LessonsService {
 
         return {
             total: lessons?.length || 0,
-            limit: query?.limit || 20,
-            page: query.page || 1,
+            limit: Number(query?.limit) || 20,
+            page: Number(query.page) || 1,
             result: lessons
         };
     }

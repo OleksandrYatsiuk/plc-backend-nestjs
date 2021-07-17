@@ -4,7 +4,7 @@ import { ECourseStatus } from 'src/courses/entities/course.entity';
 
 export type LessonDocument = Lesson & mongoose.Document;
 
-@Schema({ versionKey: false })
+@Schema()
 export class Lesson {
 
     @Prop()

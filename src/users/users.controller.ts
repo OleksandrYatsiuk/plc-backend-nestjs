@@ -24,7 +24,7 @@ export class UsersController {
   @ApiCreatedResponse({ type: UserDto })
   create(@Res() res: Response, @Body() user: CreateUserDto): void {
     this.usersService.create(user)
-      .then(user => res.status(HttpStatus.CREATED).send({ user }))
+      .then(user => res.status(HttpStatus.CREATED).send(user))
       .catch(e => console.log(e));
 
   }

@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { ECourseStatus } from 'src/courses/entities/course.entity';
 
 export type PagesDocument = Page & mongoose.Document;
 
@@ -11,7 +10,13 @@ export class Page {
     readonly id: mongoose.Types.ObjectId;
 
     @Prop({ default: null, required: true })
-    type: Number
+    type: number;
+
+    @Prop({ default: null, required: true })
+    name: string;
+
+    @Prop({ default: null })
+    path: string;
 
     @Prop({ default: null })
     content: string;

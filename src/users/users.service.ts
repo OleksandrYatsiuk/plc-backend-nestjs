@@ -13,9 +13,16 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersService {
   constructor(@InjectModel(User.name) private db: Model<UserDocument>) { }
 
-  create(data: CreateUserDto) {
-    const user = new this.db(data);
-    return user.save();
+  create(data: CreateUserDto): Promise<UserDocument> {
+    return this.db.exists({ phone: data.phone }).then(exist => {
+      if (exist) {
+        return this.db.findOne({ phone: data.phone }).exec();
+      } else {
+        const user = new this.db(data);
+        return user.save();
+      }
+    })
+
   }
 
   registerAdmin(data: RegisterDto): Promise<UserDocument> {
@@ -66,11 +73,11 @@ export class UsersService {
   }
 
   async genCode(data: CreateUserDto): Promise<UserDocument> {
-    const user = await this.db.findOne(data);
+    const user = await this.db.findOne({ phone: data.phone });
     if (user) {
       const code = this.getRandomInt(1000, 9999);
       setTimeout(() => {
-        this.db.findByIdAndUpdate(user._id, { $set: { code: null, updatedAt: Date.now() } }).exec();
+        this.db.findByIdAndUpdate(user._id, { $set: { code: null, updatedAt: Date.now() } }, { new: true }).exec();
       }, 30 * 60 * 1000);
       return this.db.findByIdAndUpdate(user._id, { $set: { code, updatedAt: Date.now() } }, { new: true }).exec();
     }
@@ -89,27 +96,6 @@ export class UsersService {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  private parseModel(user: UserDocument): User {
-    return {
-      id: user._id,
-      updatedAt: 1610276245305,
-      createdAt: 1610276245305,
-      accessToken: null,
-      passwordHash: '$2b$10$NJjfqVNNGLKdWDCVaem.4.lLKwyYOF1.SbaaoG2crLwWKcX/0qD12',
-      haveMessages: false,
-      courses: [],
-      role: 'admin',
-      code: null,
-      status: 0,
-      chat_id: null,
-      phone: null,
-      email: null,
-      lastName: null,
-      firstName: null,
-      username: 'techadmin3',
-    }
   }
 
 }

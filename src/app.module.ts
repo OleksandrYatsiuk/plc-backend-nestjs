@@ -10,6 +10,7 @@ import { LessonsModule } from './lessons/lessons.module';
 import { CertificatesModule } from './certificates/certificates.module';
 import { PagesService } from './pages/pages.service';
 import { PagesModule } from './pages/pages.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PagesModule } from './pages/pages.module';
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({ useClass: MongooseConfigService }),
     PagesModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService, MongooseConfigService],
